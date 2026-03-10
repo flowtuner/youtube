@@ -1138,20 +1138,57 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let sseBuffer = ''; // Buffer for incomplete SSE lines across chunks
+        let sseBuffer = '';
+        let renderTimer = null;
+        let pendingRender = false;
+
+        // Throttled render: max ~12 updates/sec to prevent DOM thrashing
+        function scheduleRender() {
+          if (renderTimer) { pendingRender = true; return; }
+          state.currentOutput = fullOutput;
+          render();
+          renderTimer = setTimeout(() => {
+            renderTimer = null;
+            if (pendingRender) { pendingRender = false; scheduleRender(); }
+          }, 80);
+        }
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          // stream: true ensures multi-byte UTF-8 chars (ä,ö,ü) aren't corrupted at chunk boundaries
           sseBuffer += decoder.decode(value, { stream: true });
 
-          // Process only complete lines (ending with \n), keep the rest in buffer
-          const parts = sseBuffer.split('\n');
-          sseBuffer = parts.pop(); // Last element may be incomplete — keep in buffer
+          // Process complete SSE events (separated by double-newline)
+          let eventBoundary;
+          while ((eventBoundary = sseBuffer.indexOf('\n\n')) !== -1) {
+            const eventBlock = sseBuffer.substring(0, eventBoundary);
+            sseBuffer = sseBuffer.substring(eventBoundary + 2);
 
-          for (const line of parts) {
+            // Extract data lines from event block
+            for (const line of eventBlock.split('\n')) {
+              const trimmed = line.trim();
+              if (!trimmed.startsWith('data: ')) continue;
+              const data = trimmed.slice(6);
+              if (data === '[DONE]') continue;
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                  fullOutput += parsed.delta.text;
+                  scheduleRender();
+                }
+              } catch (e) { /* skip malformed JSON */ }
+            }
+          }
+        }
+
+        // Flush decoder
+        const remaining = decoder.decode();
+        if (remaining) sseBuffer += remaining;
+
+        // Process any remaining buffered data
+        if (sseBuffer.trim()) {
+          for (const line of sseBuffer.split('\n')) {
             const trimmed = line.trim();
             if (!trimmed.startsWith('data: ')) continue;
             const data = trimmed.slice(6);
@@ -1160,27 +1197,16 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
               const parsed = JSON.parse(data);
               if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
                 fullOutput += parsed.delta.text;
-                state.currentOutput = fullOutput;
-                render();
               }
-            } catch (e) { /* incomplete JSON — will be completed in next chunk */ }
+            } catch (e) { /* skip */ }
           }
         }
 
-        // Flush any remaining buffer
-        if (sseBuffer.trim().startsWith('data: ')) {
-          const data = sseBuffer.trim().slice(6);
-          if (data !== '[DONE]') {
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-                fullOutput += parsed.delta.text;
-                state.currentOutput = fullOutput;
-                render();
-              }
-            } catch (e) { /* final chunk wasn't complete JSON */ }
-          }
-        }
+        // Cancel any pending throttled render
+        if (renderTimer) { clearTimeout(renderTimer); renderTimer = null; }
+
+        // Final definitive render with complete text
+        state.currentOutput = fullOutput;
 
         clearInterval(phaseInterval);
 

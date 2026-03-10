@@ -68,8 +68,46 @@ export default async function handler(req) {
             );
         }
 
-        // Stream direkt durchreichen – Edge Runtime unterstützt das nativ
-        return new Response(apiRes.body, {
+        // Re-stream through TransformStream to ensure each SSE event is sent atomically
+        // This prevents partial events from being sent to the client
+        const encoder = new TextEncoder();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        const stream = new ReadableStream({
+            async start(controller) {
+                const reader = apiRes.body.getReader();
+                try {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        buffer += decoder.decode(value, { stream: true });
+
+                        // Only emit complete SSE events (terminated by \n\n)
+                        let eventEnd;
+                        while ((eventEnd = buffer.indexOf('\n\n')) !== -1) {
+                            const event = buffer.substring(0, eventEnd + 2);
+                            buffer = buffer.substring(eventEnd + 2);
+                            controller.enqueue(encoder.encode(event));
+                        }
+                    }
+
+                    // Flush any remaining data
+                    const remaining = decoder.decode();
+                    if (remaining) buffer += remaining;
+                    if (buffer.length > 0) {
+                        controller.enqueue(encoder.encode(buffer + '\n\n'));
+                    }
+                } catch (err) {
+                    controller.error(err);
+                } finally {
+                    controller.close();
+                }
+            }
+        });
+
+        return new Response(stream, {
             status: 200,
             headers: {
                 'Content-Type': 'text/event-stream',
