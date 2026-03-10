@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kreis der Exzellenz – YouTube Ad Script Generator</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-card-hover: #1a1a25;
+      --bg-input: #0e0e16;
+      --border: #2a2a3a;
+      --border-focus: #6366f1;
+      --text: #e4e4e7;
+      --text-dim: #71717a;
+      --text-bright: #fafafa;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --accent-dim: rgba(99, 102, 241, 0.15);
+      --green: #22c55e;
+      --green-dim: rgba(34, 197, 94, 0.15);
+      --amber: #f59e0b;
+      --amber-dim: rgba(245, 158, 11, 0.15);
+      --red: #ef4444;
+      --red-dim: rgba(239, 68, 68, 0.15);
+      --scientist: #06b6d4;
+      --scientist-dim: rgba(6, 182, 212, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Layout */
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+    }
+
+    .main {
+      margin-left: 280px;
+      flex: 1;
+      padding: 32px 48px;
+      max-width: 1000px;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    /* Sidebar */
+    .logo {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      padding: 8px 12px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      font-size: 20px;
+    }
+
+    .nav-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-dim);
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-card-hover);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .nav-icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .nav-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 12px 0;
+    }
+
+    .api-status {
+      margin-top: auto;
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      font-size: 11px;
+    }
+
+    .api-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .api-dot.connected {
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    .api-dot.disconnected {
+      background: var(--red);
+    }
+
+    /* Page header */
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-bright);
+      margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-bright);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-icon {
+      font-size: 16px;
+    }
+
+    /* Form elements */
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--border-focus);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      color: var(--text);
+      border-color: var(--text-dim);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    /* Thinker chips */
+    .thinker-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .thinker-chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-dim);
+      transition: all 0.15s;
+      user-select: none;
+    }
+
+    .thinker-chip:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .thinker-chip.selected {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .thinker-chip.required {
+      background: var(--scientist-dim);
+      border-color: var(--scientist);
+      color: var(--scientist);
+      cursor: default;
+    }
+
+    .thinker-chip .chip-role {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-left: 4px;
+    }
+
+    /* Framework chips */
+    .framework-chip {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-dim);
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .framework-chip:hover {
+      border-color: var(--accent);
+    }
+
+    .framework-chip.selected {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .framework-stars {
+      font-size: 10px;
+    }
+
+    /* Output */
+    .output-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .output-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .output-tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .output-tab {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-dim);
+      transition: all 0.15s;
+      background: transparent;
+      border: none;
+      font-family: inherit;
+    }
+
+    .output-tab:hover {
+      color: var(--text);
+    }
+
+    .output-tab.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .output-body {
+      padding: 24px;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .output-body h1 {
+      font-size: 20px;
+      color: var(--text-bright);
+      margin: 24px 0 12px;
+    }
+
+    .output-body h2 {
+      font-size: 16px;
+      color: var(--accent);
+      margin: 20px 0 10px;
+    }
+
+    .output-body h3 {
+      font-size: 14px;
+      color: var(--text-bright);
+      margin: 16px 0 8px;
+    }
+
+    .output-body p {
+      margin-bottom: 12px;
+    }
+
+    .output-body strong {
+      color: var(--text-bright);
+    }
+
+    .output-body hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+
+    .script-section {
+      border-left: 3px solid var(--accent);
+      padding: 16px 20px;
+      margin: 16px 0;
+      background: var(--accent-dim);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .script-section.hook {
+      border-left-color: var(--red);
+      background: var(--red-dim);
+    }
+
+    .script-section.engage {
+      border-left-color: var(--amber);
+      background: var(--amber-dim);
+    }
+
+    .script-section.mechanism {
+      border-left-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .script-section.proof {
+      border-left-color: var(--green);
+      background: var(--green-dim);
+    }
+
+    .script-section.cta {
+      border-left-color: var(--scientist);
+      background: var(--scientist-dim);
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .script-section.hook .section-label {
+      color: var(--red);
+    }
+
+    .script-section.engage .section-label {
+      color: var(--amber);
+    }
+
+    .script-section.mechanism .section-label {
+      color: var(--accent);
+    }
+
+    .script-section.proof .section-label {
+      color: var(--green);
+    }
+
+    .script-section.cta .section-label {
+      color: var(--scientist);
+    }
+
+    .visual-note {
+      color: var(--text-dim);
+      font-style: italic;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .audio-line {
+      font-weight: 500;
+      color: var(--text-bright);
+      font-size: 15px;
+    }
+
+    .reasoning {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Streaming animation */
+    .streaming-cursor::after {
+      content: '▊';
+      animation: blink 0.8s infinite;
+      color: var(--accent);
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0;
+      }
+    }
+
+    /* Loading */
+    .generating {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .generating-text {
+      font-size: 13px;
+      color: var(--text-dim);
+      text-align: center;
+    }
+
+    .generating-phase {
+      font-size: 14px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Archive */
+    .archive-item {
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .archive-item:hover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .archive-title {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .archive-meta {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* Settings */
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .setting-label {
+      font-size: 14px;
+    }
+
+    .setting-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .api-input-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .api-input {
+      width: 300px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'SF Mono', monospace;
+      outline: none;
+    }
+
+    .api-input:focus {
+      border-color: var(--border-focus);
+    }
+
+    /* Debate panel */
+    .debate-message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+
+    .debate-speaker {
+      font-weight: 700;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar {
+        display: none;
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 16px;
+      }
+
+      .form-row,
+      .form-row-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--green);
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 13px;
+      color: var(--green);
+      z-index: 1000;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Password Protection Overlay */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .login-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      animation: scaleIn 0.3s ease;
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .login-logo {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .login-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-bright);
+      margin-bottom: 4px;
+    }
+
+    .login-subtitle {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 32px;
+    }
+
+    .login-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 16px;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+
+    .login-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .login-input.error {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px var(--red-dim);
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-8px);
+      }
+
+      50% {
+        transform: translateX(8px);
+      }
+
+      75% {
+        transform: translateX(-4px);
+      }
+    }
+
+    .login-btn {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .login-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-error {
+      color: var(--red);
+      font-size: 13px;
+      margin-top: 12px;
+      min-height: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Password Protection -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-box">
+      <div class="login-logo">🌠</div>
+      <div class="login-title">Kreis der Exzellenz</div>
+      <div class="login-subtitle">Zugang nur für autorisierte Nutzer</div>
+      <form id="login-form" autocomplete="off">
+        <input type="password" class="login-input" id="login-password" placeholder="Passwort eingeben" autofocus>
+        <button type="submit" class="login-btn">Zugang erhalten</button>
+        <div class="login-error" id="login-error"></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="app" style="display:none"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+  <script>
+    // ============================================================
+    // Kreis der Exzellenz – YouTube Ad Script Generator
+    // ============================================================
+
+    const THINKERS = [
+      { id: 'scientist_whisperer', name: 'Scientist Whisperer', role: 'Zielgruppen-Wächter', required: true, emoji: '🔬' },
+      { id: 'eugene_schwartz', name: 'Eugene Schwartz', role: 'Awareness-Stratege', required: false, emoji: '🎯' },
+      { id: 'alex_hormozi', name: 'Alex Hormozi', role: 'Offer-Architekt', required: false, emoji: '💰' },
+      { id: 'russell_brunson', name: 'Russell Brunson', role: 'Story-Architekt', required: false, emoji: '📖' },
+      { id: 'david_ogilvy', name: 'David Ogilvy', role: 'Qualitätswächter', required: false, emoji: '🎩' },
+      { id: 'todd_brown', name: 'Todd Brown', role: 'Mechanism-Ingenieur', required: false, emoji: '⚙️' },
+      { id: 'sabri_suby', name: 'Sabri Suby', role: 'Intensifier', required: false, emoji: '🔥' },
+      { id: 'billy_gene', name: 'Billy Gene Shaw', role: 'Aufmerksamkeits-Ingenieur', required: false, emoji: '⚡' },
+      { id: 'frank_kern', name: 'Frank Kern', role: 'Trust-Architekt', required: false, emoji: '🤝' },
+      { id: 'stefan_georgi', name: 'Stefan Georgi', role: 'Research-Master', required: false, emoji: '🔍' },
+      { id: 'harmon_brothers', name: 'Harmon Brothers', role: 'Visual Storytellers', required: false, emoji: '🎬' },
+      { id: 'dan_kennedy', name: 'Dan Kennedy', role: 'ROI-Wächter', required: false, emoji: '📊' },
+      { id: 'gary_halbert', name: 'Gary Halbert', role: 'Curiosity-Meister', required: false, emoji: '🪝' },
+    ];
+
+    const FRAMEWORKS = [
+      { id: 'evidence_first', name: 'Evidence-First', use: 'Wenn harte Daten vorhanden', score: 5 },
+      { id: 'pas_scientist', name: 'PAS for Scientists', use: 'Problem Aware Zielgruppe', score: 5 },
+      { id: 'unique_mechanism', name: 'Unique Mechanism + Educate', use: 'Gesättigter Markt (Stufe 3+)', score: 5 },
+      { id: 'hook_story_offer', name: 'Hook-Story-Offer', use: 'Wenn Gründer-Story existiert', score: 4 },
+      { id: 'value_stack', name: 'Value Stack (Hormozi)', use: 'Community/Premium-Produkte', score: 3 },
+    ];
+
+    const AWARENESS_LEVELS = [
+      'Unaware – Weiß nicht, dass ein Problem existiert',
+      'Problem Aware – Kennt das Problem, nicht die Lösung',
+      'Solution Aware – Kennt Lösungstypen, nicht dein Produkt',
+      'Product Aware – Kennt dein Produkt, noch nicht überzeugt',
+      'Most Aware – Kennt und vertraut, braucht nur den Anstoß',
+    ];
+
+    const TONALITIES = ['Sachlich-wissenschaftlich', 'Warm-kollegial', 'Provokativ-herausfordernd'];
+    const DURATIONS = ['30s', '60s', '90s', '120s'];
+    const LANGUAGES = ['Deutsch', 'Englisch'];
+    const PRODUCTS = ['Software-Tool', 'Community Membership', 'Beides'];
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    let state = {
+      page: 'generate',
+      apiConnected: false,
+      model: localStorage.getItem('kde_model') || 'claude-sonnet-4-6',
+      // Briefing
+      product: 'Software-Tool',
+      productName: '',
+      corePromise: '',
+      uniqueMechanism: '',
+      awareness: AWARENESS_LEVELS[1],
+      language: 'Deutsch',
+      tonality: TONALITIES[0],
+      duration: '60s',
+      additionalContext: '',
+      selectedThinkers: ['scientist_whisperer', 'eugene_schwartz', 'todd_brown', 'frank_kern'],
+      selectedFrameworks: ['evidence_first'],
+      // Output
+      isGenerating: false,
+      generatingPhase: '',
+      currentOutput: '',
+      outputTab: 'script',
+      // Archive
+      archive: JSON.parse(localStorage.getItem('kde_archive') || '[]'),
+      selectedArchiveItem: null,
+      // Toast
+      toast: null,
+    };
+
+    function setState(patch) {
+      Object.assign(state, patch);
+      render();
+    }
+
+    function showToast(msg) {
+      state.toast = msg;
+      render();
+      setTimeout(() => { state.toast = null; render(); }, 3000);
+    }
+
+    // ============================================================
+    // API INTEGRATION
+    // ============================================================
+
+    function buildSystemPrompt() {
+      const thinkerNames = state.selectedThinkers.map(id => {
+        const t = THINKERS.find(x => x.id === id);
+        return t ? `${t.name} (${t.role})` : id;
+      }).join(', ');
+
+      const frameworkNames = state.selectedFrameworks.map(id => {
+        const f = FRAMEWORKS.find(x => x.id === id);
+        return f ? f.name : id;
+      }).join(', ');
+
+      return `Du bist der Orchestrator des "Kreis der Exzellenz" – ein YouTube Ad Script Generator, der Marketing-Denker aus verschiedenen Epochen in einer simulierten Debatte zusammenbringt.
+
+ZIELGRUPPE: Skeptische Scientists (primär Toxikolog:innen), die von KI-Software-Tools und Community-Memberships überzeugt werden sollen.
+
+DEIN PROZESS:
+1. Analysiere das Briefing
+2. Lass die ausgewählten Denker debattieren – jeder bringt seine Perspektive ein
+3. Synthetisiere das beste Skript aus der Debatte
+4. Wende den Scientist-Filter an (keine Buzzwords, keine Hype-Sprache, KI als Erweiterung nicht Ersatz)
+5. Liefere A/B-Test-Varianten
+
+AUSGEWÄHLTE DENKER für dieses Skript: ${thinkerNames}
+
+DENKER-ROLLEN:
+- Scientist Whisperer (PFLICHT): Zielgruppen-Wächter mit Veto-Recht. Stellt sicher, dass jedes Element bei Scientists funktioniert. Kennt die Psychologie wissenschaftlicher Skepsis.
+- Eugene Schwartz: Bestimmt die richtige Awareness-Stufe und Sophistication-Level. 5 Stufen der Awareness, 5 Stufen der Sophistication.
+- Alex Hormozi: Optimiert den Offer mit seiner Value Equation (Traumergebnis × Wahrscheinlichkeit / Zeitverzögerung × Aufwand).
+- Russell Brunson: Baut die narrative Brücke. Hook-Story-Offer, Epiphany Bridge, New Opportunity.
+- David Ogilvy: Qualitätskontrolle. Facts-first, Research-based, Anti-Hype. "The consumer is not a moron."
+- Todd Brown: Entwickelt den Unique Mechanism. Erklärt WARUM bisherige Ansätze scheitern und WIE der neue funktioniert.
+- Sabri Suby: Intensiviert die Problem-Darstellung (gefiltert durch Scientist Whisperer). Dream Buyer Research.
+- Billy Gene Shaw: Pattern Interrupts, unerwartete Hooks, Entertainment-Elemente.
+- Frank Kern: Results in Advance, Trust-Building, Friendly Marketing.
+- Stefan Georgi: RMBC-Methode, modulare Copy-Architektur für A/B-Testing.
+- Harmon Brothers: Visuelle Storytelling-Konzepte, Demo-Mastery.
+- Dan Kennedy: ROI-Fokus, messbare CTAs, Accountability.
+- Gary Halbert: Curiosity Gaps, Open Loops, ethische Urgency.
+
+GEWÄHLTE FRAMEWORKS: ${frameworkNames}
+
+FRAMEWORKS-DETAILS:
+- Evidence-First: Spiegelt die wissenschaftliche Methode (Observation → Hypothesis → Method → Results → Limitations → Conclusion/CTA). Höchste Scientist-Kompatibilität.
+- PAS for Scientists: Problem (präzise, fachsprachlich) → Agitate (Konsequenzen durchspielen, NICHT manipulativ) → Solution (als logische Konsequenz).
+- Unique Mechanism + Educate: Zeige WARUM bisherige Ansätze scheitern, dann den neuen Mechanism. Für gesättigte Märkte.
+- Hook-Story-Offer: Universelle Erzählstruktur. Hook (Pattern Interrupt) → Story (Epiphany Bridge) → Offer.
+- Value Stack (Hormozi): Wert-Aufbau durch Kernprodukt + Bonusse + Garantie. Für Premium-Angebote.
+
+SCIENTIST-FILTER (PFLICHT):
+❌ Keine Buzzwords: "revolutionär", "disruptiv", "bahnbrechend", "game-changer"
+❌ Keine übertriebenen Claims ohne Daten
+❌ Kein "KI ersetzt Sie" – IMMER "KI erweitert Ihre Fähigkeiten"
+❌ Keine künstliche Dringlichkeit
+✅ Präzise Fachsprache der Zielgruppe
+✅ Transparenz über Limitierungen (baut Vertrauen)
+✅ Peer-Validierung statt Marketing-Testimonials
+✅ Bildung vor Verkauf
+✅ Skepsis der Zielgruppe respektieren und feiern
+
+OUTPUT-FORMAT:
+Strukturiere dein Output in Markdown genau so:
+
+# [Arbeitstitel des Skripts]
+
+## Die Debatte
+[Kurze, lebendige Zusammenfassung: Welcher Denker hat was argumentiert? Wo gab es Dissens? Welche Entscheidungen wurden getroffen und warum?]
+
+## Das Skript
+
+### HOOK (0-5s)
+**Visuell:** [Beschreibung]
+**Audio:** "[Exakter Sprechtext]"
+**Begründung:** [Welcher Denker/Framework und warum]
+
+### ENGAGEMENT (5-15s)
+**Visuell:** [Beschreibung]
+**Audio:** "[Exakter Sprechtext]"
+**Begründung:** [Welcher Denker/Framework und warum]
+
+### MECHANISM (15-30s)
+**Visuell:** [Beschreibung]
+**Audio:** "[Exakter Sprechtext]"
+**Begründung:** [Welcher Denker/Framework und warum]
+
+### PROOF (30-45s)
+**Visuell:** [Beschreibung]
+**Audio:** "[Exakter Sprechtext]"
+**Begründung:** [Welcher Denker/Framework und warum]
+
+### CTA (45-60s)
+**Visuell:** [Beschreibung]
+**Audio:** "[Exakter Sprechtext]"
+**Begründung:** [Welcher Denker/Framework und warum]
+
+## A/B-Test-Varianten
+### Hook-Variante A
+[Alternativer Hook mit Begründung]
+### Hook-Variante B
+[Alternativer Hook mit Begründung]
+### CTA-Variante
+[Alternativer CTA mit Begründung]
+
+## Performance-Hypothesen
+- Erwartete VTR: [Schätzung mit Begründung]
+- Skip-Risiko-Punkt: [Sekunde, warum]
+- Empfohlener erster A/B-Test: [Was zuerst testen]`;
+    }
+
+    function buildUserPrompt() {
+      return `BRIEFING:
+
+Produkt: ${state.product}
+Produktname: ${state.productName || '[Noch nicht benannt – verwende einen Platzhalter]'}
+Kernversprechen: ${state.corePromise || '[Nicht angegeben – leite es aus dem Kontext ab]'}
+Unique Mechanism: ${state.uniqueMechanism || '[Noch nicht definiert – der Kreis soll einen vorschlagen]'}
+Awareness-Level: ${state.awareness}
+Sprache: ${state.language}
+Tonalität: ${state.tonality}
+Ziellänge: ${state.duration}
+${state.additionalContext ? `\nZusätzlicher Kontext:\n${state.additionalContext}` : ''}
+
+Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Ergebnis im vorgegebenen Format.`;
+    }
+
+    async function generateScript() {
+      if (!state.apiConnected) {
+        showToast('Server nicht verbunden – starte den Server mit: node server.js');
+        setState({ page: 'settings' });
+        return;
+      }
+
+      setState({ isGenerating: true, currentOutput: '', generatingPhase: 'Briefing wird analysiert...', page: 'output' });
+
+      const phases = [
+        'Denker werden einberufen...',
+        'Debatte läuft...',
+        'Scientist Whisperer prüft...',
+        'Skript wird synthetisiert...',
+        'A/B-Varianten werden generiert...',
+      ];
+
+      let phaseIndex = 0;
+      const phaseInterval = setInterval(() => {
+        phaseIndex = Math.min(phaseIndex + 1, phases.length - 1);
+        state.generatingPhase = phases[phaseIndex];
+        render();
+      }, 4000);
+
+      try {
+        let fullOutput = '';
+
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: state.model,
+            max_tokens: 8192,
+            system: buildSystemPrompt(),
+            messages: [{ role: 'user', content: buildUserPrompt() }],
+          }),
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+          throw new Error(err.error || `Server-Fehler: ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') continue;
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                  fullOutput += parsed.delta.text;
+                  state.currentOutput = fullOutput;
+                  render();
+                }
+              } catch (e) { /* skip parse errors */ }
+            }
+          }
+        }
+
+        clearInterval(phaseInterval);
+
+        // Save to archive
+        const title = fullOutput.match(/^#\s+(.+)$/m)?.[1] || `Skript ${new Date().toLocaleDateString('de-DE')}`;
+        const archiveItem = {
+          id: Date.now(),
+          title,
+          date: new Date().toISOString(),
+          product: state.product,
+          language: state.language,
+          duration: state.duration,
+          thinkers: [...state.selectedThinkers],
+          frameworks: [...state.selectedFrameworks],
+          content: fullOutput,
+        };
+
+        state.archive.unshift(archiveItem);
+        localStorage.setItem('kde_archive', JSON.stringify(state.archive));
+
+        setState({ isGenerating: false });
+        showToast('Skript generiert und archiviert');
+
+      } catch (err) {
+        clearInterval(phaseInterval);
+        setState({ isGenerating: false, currentOutput: `**Fehler:** ${err.message}\n\nBitte API-Key und Provider in den Einstellungen prüfen.` });
+      }
+    }
+
+    // ============================================================
+    // RENDER
+    // ============================================================
+
+    function render() {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+    <div class="app">
+      ${renderSidebar()}
+      <div class="main">
+        ${state.page === 'generate' ? renderGeneratePage() : ''}
+        ${state.page === 'output' ? renderOutputPage() : ''}
+        ${state.page === 'archive' ? renderArchivePage() : ''}
+        ${state.page === 'thinkers' ? renderThinkersPage() : ''}
+        ${state.page === 'settings' ? renderSettingsPage() : ''}
+      </div>
+      ${state.toast ? `<div class="toast">✓ ${state.toast}</div>` : ''}
+    </div>
+  `;
+      bindEvents();
+    }
+
+    function renderSidebar() {
+      return `
+    <div class="sidebar">
+      <div class="logo"><span class="logo-icon">🌠</span> Kreis der Exzellenz</div>
+
+      <div class="nav-item ${state.page === 'generate' ? 'active' : ''}" data-page="generate">
+        <span class="nav-icon">✦</span> Skript generieren
+      </div>
+      <div class="nav-item ${state.page === 'output' ? 'active' : ''}" data-page="output">
+        <span class="nav-icon">📄</span> Aktuelles Skript
+      </div>
+      <div class="nav-item ${state.page === 'archive' ? 'active' : ''}" data-page="archive">
+        <span class="nav-icon">📚</span> Archiv <span style="color:var(--text-dim);font-size:11px;margin-left:auto">${state.archive.length}</span>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <div class="nav-item ${state.page === 'thinkers' ? 'active' : ''}" data-page="thinkers">
+        <span class="nav-icon">🧠</span> Denker-Panel
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <div class="nav-item ${state.page === 'settings' ? 'active' : ''}" data-page="settings">
+        <span class="nav-icon">⚙</span> Einstellungen
+      </div>
+
+      <div class="api-status">
+        <span class="api-dot ${state.apiConnected ? 'connected' : 'disconnected'}"></span>
+        ${state.apiConnected ? 'Anthropic verbunden' : 'Server nicht verbunden'}
+      </div>
+    </div>
+  `;
+    }
+
+    function renderGeneratePage() {
+      return `
+    <div class="page-header">
+      <div class="page-title">Skript generieren</div>
+      <div class="page-subtitle">Briefing ausfüllen → Denker wählen → Kreis debattieren lassen</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-icon">📋</span> Briefing</div>
+
+      <div class="form-row-3">
+        <div>
+          <label>Produkt</label>
+          <select id="f-product">
+            ${PRODUCTS.map(p => `<option ${state.product === p ? 'selected' : ''}>${p}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label>Sprache</label>
+          <select id="f-language">
+            ${LANGUAGES.map(l => `<option ${state.language === l ? 'selected' : ''}>${l}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label>Ziellänge</label>
+          <select id="f-duration">
+            ${DURATIONS.map(d => `<option ${state.duration === d ? 'selected' : ''}>${d}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Produktname</label>
+        <input type="text" id="f-productName" value="${esc(state.productName)}" placeholder="z.B. ToxScope, ChemAssist, DataPeer...">
+      </div>
+
+      <div class="form-group">
+        <label>Kernversprechen</label>
+        <input type="text" id="f-corePromise" value="${esc(state.corePromise)}" placeholder="Was ist das eine Ergebnis, das die Zielgruppe erreicht?">
+      </div>
+
+      <div class="form-group">
+        <label>Unique Mechanism</label>
+        <input type="text" id="f-uniqueMechanism" value="${esc(state.uniqueMechanism)}" placeholder="Was macht dieses Produkt anders? (Leer lassen = Kreis schlägt vor)">
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label>Awareness-Level</label>
+          <select id="f-awareness">
+            ${AWARENESS_LEVELS.map(a => `<option ${state.awareness === a ? 'selected' : ''}>${a}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label>Tonalität</label>
+          <select id="f-tonality">
+            ${TONALITIES.map(t => `<option ${state.tonality === t ? 'selected' : ''}>${t}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Zusätzlicher Kontext <span style="font-weight:400;text-transform:none">(optional)</span></label>
+        <textarea id="f-additionalContext" rows="3" placeholder="Besondere Anforderungen, Zielgruppen-Details, vorherige Testergebnisse...">${esc(state.additionalContext)}</textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-icon">🧠</span> Denker-Panel <span style="font-size:11px;color:var(--text-dim);font-weight:400;margin-left:8px">${state.selectedThinkers.length} ausgewählt</span></div>
+      <div class="thinker-grid">
+        ${THINKERS.map(t => `
+          <div class="thinker-chip ${t.required ? 'required' : (state.selectedThinkers.includes(t.id) ? 'selected' : '')}" data-thinker="${t.id}">
+            ${t.emoji} ${t.name}
+            <span class="chip-role">${t.role}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-icon">📐</span> Frameworks <span style="font-size:11px;color:var(--text-dim);font-weight:400;margin-left:8px">${state.selectedFrameworks.length} ausgewählt</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${FRAMEWORKS.map(f => `
+          <div class="framework-chip ${state.selectedFrameworks.includes(f.id) ? 'selected' : ''}" data-framework="${f.id}">
+            <div>
+              <div style="font-weight:600">${f.name}</div>
+              <div style="font-size:10px;color:var(--text-dim);margin-top:2px">${f.use}</div>
+            </div>
+            <div class="framework-stars">${'★'.repeat(f.score)}${'☆'.repeat(5 - f.score)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px">
+      <button class="btn btn-primary" id="btn-generate" ${state.isGenerating ? 'disabled' : ''}>
+        🌠 Kreis einberufen & generieren
+      </button>
+    </div>
+  `;
+    }
+
+    function renderOutputPage() {
+      if (state.isGenerating && !state.currentOutput) {
+        return `
+      <div class="page-header">
+        <div class="page-title">Skript wird generiert...</div>
+      </div>
+      <div class="output-container">
+        <div class="generating">
+          <div class="spinner"></div>
+          <div class="generating-phase">${state.generatingPhase}</div>
+          <div class="generating-text">Der Kreis der Exzellenz debattiert über Ihr Skript.</div>
+        </div>
+      </div>
+    `;
+      }
+
+      if (!state.currentOutput) {
+        return `
+      <div class="page-header">
+        <div class="page-title">Aktuelles Skript</div>
+        <div class="page-subtitle">Noch kein Skript generiert. Starten Sie auf der Generieren-Seite.</div>
+      </div>
+    `;
+      }
+
+      const rendered = formatScriptOutput(state.currentOutput);
+
+      return `
+    <div class="page-header">
+      <div class="page-title">Aktuelles Skript ${state.isGenerating ? '<span style="color:var(--accent);font-size:14px">● Live</span>' : ''}</div>
+    </div>
+    <div class="output-container">
+      <div class="output-header">
+        <div class="output-tabs">
+          <button class="output-tab ${state.outputTab === 'script' ? 'active' : ''}" data-tab="script">Skript</button>
+          <button class="output-tab ${state.outputTab === 'raw' ? 'active' : ''}" data-tab="raw">Markdown</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" id="btn-copy">📋 Kopieren</button>
+        </div>
+      </div>
+      <div class="output-body ${state.isGenerating ? 'streaming-cursor' : ''}">
+        ${state.outputTab === 'script' ? rendered : `<pre style="white-space:pre-wrap;font-size:13px;font-family:'SF Mono',monospace;color:var(--text-dim)">${esc(state.currentOutput)}</pre>`}
+      </div>
+    </div>
+  `;
+    }
+
+    function formatScriptOutput(md) {
+      // Convert markdown to HTML with section highlighting
+      let html = marked.parse(md);
+
+      // Wrap script sections in colored containers
+      html = html.replace(/<h3>HOOK\s*\(([^)]+)\)<\/h3>/gi, '<div class="script-section hook"><div class="section-label">Hook ($1)</div>');
+      html = html.replace(/<h3>ENGAGEMENT\s*\(([^)]+)\)<\/h3>/gi, '</div><div class="script-section engage"><div class="section-label">Engagement ($1)</div>');
+      html = html.replace(/<h3>MECHANISM\s*\(([^)]+)\)<\/h3>/gi, '</div><div class="script-section mechanism"><div class="section-label">Mechanism ($1)</div>');
+      html = html.replace(/<h3>PROOF\s*\(([^)]+)\)<\/h3>/gi, '</div><div class="script-section proof"><div class="section-label">Proof ($1)</div>');
+      html = html.replace(/<h3>(CTA|EHRLICHKEITS-MOMENT)\s*\(([^)]+)\)<\/h3>/gi, '</div><div class="script-section cta"><div class="section-label">$1 ($2)</div>');
+
+      // Close the last section before next h2
+      html = html.replace(/<h2>A\/B/gi, '</div><h2>A/B');
+
+      // Style audio lines
+      html = html.replace(/<strong>Audio:<\/strong>\s*"([^"]+)"/g, '<strong>Audio:</strong> <span class="audio-line">"$1"</span>');
+      html = html.replace(/<strong>Visuell:<\/strong>/g, '<span class="visual-note"><strong>Visuell:</strong></span>');
+
+      return html;
+    }
+
+    function renderArchivePage() {
+      return `
+    <div class="page-header">
+      <div class="page-title">Skript-Archiv</div>
+      <div class="page-subtitle">${state.archive.length} Skripte gespeichert</div>
+    </div>
+
+    ${state.selectedArchiveItem ? `
+      <div style="margin-bottom:16px">
+        <button class="btn btn-secondary btn-sm" id="btn-back-archive">← Zurück zur Liste</button>
+      </div>
+      <div class="output-container">
+        <div class="output-header">
+          <div style="font-weight:600;font-size:14px">${esc(state.selectedArchiveItem.title)}</div>
+          <button class="btn btn-secondary btn-sm" id="btn-copy-archive">📋 Kopieren</button>
+        </div>
+        <div class="output-body">${formatScriptOutput(state.selectedArchiveItem.content)}</div>
+      </div>
+    ` : `
+      ${state.archive.length === 0 ? '<div style="color:var(--text-dim);padding:40px;text-align:center">Noch keine Skripte generiert.</div>' : ''}
+      ${state.archive.map(item => `
+        <div class="archive-item" data-archive="${item.id}">
+          <div>
+            <div class="archive-title">${esc(item.title)}</div>
+            <div class="archive-meta">${new Date(item.date).toLocaleDateString('de-DE')} · ${item.product} · ${item.language} · ${item.duration}</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-secondary btn-sm btn-delete-archive" data-delete="${item.id}">🗑</button>
+          </div>
+        </div>
+      `).join('')}
+    `}
+  `;
+    }
+
+    function renderThinkersPage() {
+      return `
+    <div class="page-header">
+      <div class="page-title">Denker-Panel</div>
+      <div class="page-subtitle">${THINKERS.length} Denker verfügbar · Scientist Whisperer ist immer dabei</div>
+    </div>
+
+    ${THINKERS.map(t => `
+      <div class="card" style="display:flex;gap:16px;align-items:flex-start">
+        <div style="font-size:32px;line-height:1">${t.emoji}</div>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:600;color:var(--text-bright);margin-bottom:2px">${t.name}</div>
+          <div style="font-size:12px;color:var(--accent);margin-bottom:8px">${t.role}</div>
+          <div style="font-size:13px;color:var(--text-dim)">
+            ${t.required ? 'Pflicht-Mitglied mit Veto-Recht. Wird bei jedem Skript automatisch einbezogen.' :
+          `Wähle diesen Denker, wenn du ${t.role === 'Awareness-Stratege' ? 'die richtige Awareness-Stufe bestimmen musst' :
+            t.role === 'Offer-Architekt' ? 'den Offer optimieren und den wahrgenommenen Wert maximieren willst' :
+              t.role === 'Story-Architekt' ? 'eine narrative Brücke und emotionale Verbindung brauchst' :
+                t.role === 'Qualitätswächter' ? 'sicherstellen willst, dass jedes Wort auf Fakten basiert' :
+                  t.role === 'Mechanism-Ingenieur' ? 'erklären musst, WARUM dein Ansatz funktioniert' :
+                    t.role === 'Intensifier' ? 'die emotionale Wirkung des Problems verstärken willst' :
+                      t.role === 'Aufmerksamkeits-Ingenieur' ? 'einen unvergesslichen Hook brauchst' :
+                        t.role === 'Trust-Architekt' ? 'Vertrauen aufbauen willst, bevor du verkaufst' :
+                          t.role === 'Research-Master' ? 'modulare, testbare Copy-Elemente brauchst' :
+                            t.role === 'Visual Storytellers' ? 'visuelle Demo-Konzepte für Video brauchst' :
+                              t.role === 'ROI-Wächter' ? 'messbare Ergebnisse und harte CTAs brauchst' :
+                                'Neugier und Open Loops erzeugen willst'}.`
+        }
+          </div>
+        </div>
+        <div>
+          ${t.required ?
+          '<span style="font-size:11px;color:var(--scientist);background:var(--scientist-dim);padding:4px 10px;border-radius:12px">PFLICHT</span>' :
+          `<span style="font-size:11px;color:${state.selectedThinkers.includes(t.id) ? 'var(--green)' : 'var(--text-dim)'};background:${state.selectedThinkers.includes(t.id) ? 'var(--green-dim)' : 'var(--bg)'};padding:4px 10px;border-radius:12px">${state.selectedThinkers.includes(t.id) ? '✓ Aktiv' : 'Inaktiv'}</span>`
+        }
+        </div>
+      </div>
+    `).join('')}
+  `;
+    }
+
+    function renderSettingsPage() {
+      return `
+    <div class="page-header">
+      <div class="page-title">Einstellungen</div>
+      <div class="page-subtitle">Server-Verbindung und Modell-Konfiguration</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-icon">🔗</span> Server-Status</div>
+
+      <div class="setting-row" style="border-bottom:none">
+        <div>
+          <div class="setting-label" style="display:flex;align-items:center;gap:8px">
+            <span class="api-dot ${state.apiConnected ? 'connected' : 'disconnected'}"></span>
+            ${state.apiConnected ? 'Server verbunden – Anthropic API aktiv' : 'Server nicht erreichbar'}
+          </div>
+          <div class="setting-desc">
+            ${state.apiConnected
+          ? 'Der API-Key wird sicher auf dem Server in der .env-Datei gespeichert.'
+          : 'Starte den Server mit <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">node server.js</code> im Projektordner.'}
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btn-check-connection">Verbindung prüfen</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-icon">🤖</span> Modell</div>
+
+      <div class="form-group">
+        <label>Claude-Modell auswählen</label>
+        <select id="s-model">
+          <option value="claude-opus-4-6" ${state.model === 'claude-opus-4-6' ? 'selected' : ''}>Claude Opus 4.6 – Höchste Qualität, langsamer</option>
+          <option value="claude-sonnet-4-6" ${state.model === 'claude-sonnet-4-6' ? 'selected' : ''}>Claude Sonnet 4.6 – Schnell und sehr gut (empfohlen)</option>
+        </select>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px">
+          <strong>Opus 4.6</strong> liefert die tiefsten Debatten und kreativsten Skripte. Ideal für wichtige Kampagnen.<br>
+          <strong>Sonnet 4.6</strong> ist schneller und günstiger – perfekt für A/B-Test-Varianten und Iterationen.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-icon">💾</span> Daten</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Archiv leeren</div>
+          <div class="setting-desc">${state.archive.length} Skripte gespeichert (im Browser)</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btn-clear-archive">Archiv leeren</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-icon">📖</span> Setup-Anleitung</div>
+      <div style="font-size:13px;line-height:1.8;color:var(--text-dim)">
+        <strong style="color:var(--text)">1.</strong> Erstelle einen API-Key auf <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent)">console.anthropic.com</a><br>
+        <strong style="color:var(--text)">2.</strong> Öffne die Datei <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">.env</code> im Projektordner<br>
+        <strong style="color:var(--text)">3.</strong> Ersetze <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">sk-ant-DEIN-KEY-HIER</code> durch deinen echten Key<br>
+        <strong style="color:var(--text)">4.</strong> Starte den Server: <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">node server.js</code><br>
+        <strong style="color:var(--text)">5.</strong> Öffne <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">http://localhost:3333</code> im Browser
+      </div>
+    </div>
+  `;
+    }
+
+    // ============================================================
+    // EVENT BINDING
+    // ============================================================
+
+    function bindEvents() {
+      // Navigation
+      document.querySelectorAll('.nav-item[data-page]').forEach(el => {
+        el.addEventListener('click', () => setState({ page: el.dataset.page }));
+      });
+
+      // Thinker selection
+      document.querySelectorAll('.thinker-chip[data-thinker]').forEach(el => {
+        el.addEventListener('click', () => {
+          const id = el.dataset.thinker;
+          const t = THINKERS.find(x => x.id === id);
+          if (t.required) return;
+          const sel = [...state.selectedThinkers];
+          if (sel.includes(id)) sel.splice(sel.indexOf(id), 1);
+          else sel.push(id);
+          setState({ selectedThinkers: sel });
+        });
+      });
+
+      // Framework selection
+      document.querySelectorAll('.framework-chip[data-framework]').forEach(el => {
+        el.addEventListener('click', () => {
+          const id = el.dataset.framework;
+          const sel = [...state.selectedFrameworks];
+          if (sel.includes(id)) sel.splice(sel.indexOf(id), 1);
+          else sel.push(id);
+          setState({ selectedFrameworks: sel });
+        });
+      });
+
+      // Form fields
+      const bind = (id, key) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', () => { state[key] = el.value; });
+      };
+
+      bind('f-product', 'product');
+      bind('f-language', 'language');
+      bind('f-duration', 'duration');
+      bind('f-productName', 'productName');
+      bind('f-corePromise', 'corePromise');
+      bind('f-uniqueMechanism', 'uniqueMechanism');
+      bind('f-awareness', 'awareness');
+      bind('f-tonality', 'tonality');
+      bind('f-additionalContext', 'additionalContext');
+
+      // Generate
+      const btnGen = document.getElementById('btn-generate');
+      if (btnGen) btnGen.addEventListener('click', generateScript);
+
+      // Output tabs
+      document.querySelectorAll('.output-tab[data-tab]').forEach(el => {
+        el.addEventListener('click', () => setState({ outputTab: el.dataset.tab }));
+      });
+
+      // Copy
+      const btnCopy = document.getElementById('btn-copy');
+      if (btnCopy) btnCopy.addEventListener('click', () => {
+        navigator.clipboard.writeText(state.currentOutput);
+        showToast('In Zwischenablage kopiert');
+      });
+
+      const btnCopyArchive = document.getElementById('btn-copy-archive');
+      if (btnCopyArchive) btnCopyArchive.addEventListener('click', () => {
+        navigator.clipboard.writeText(state.selectedArchiveItem.content);
+        showToast('In Zwischenablage kopiert');
+      });
+
+      // Archive
+      document.querySelectorAll('.archive-item[data-archive]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          if (e.target.closest('.btn-delete-archive')) return;
+          const item = state.archive.find(x => x.id === parseInt(el.dataset.archive));
+          setState({ selectedArchiveItem: item });
+        });
+      });
+
+      document.querySelectorAll('.btn-delete-archive[data-delete]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = parseInt(el.dataset.delete);
+          state.archive = state.archive.filter(x => x.id !== id);
+          localStorage.setItem('kde_archive', JSON.stringify(state.archive));
+          render();
+          showToast('Skript gelöscht');
+        });
+      });
+
+      const btnBackArchive = document.getElementById('btn-back-archive');
+      if (btnBackArchive) btnBackArchive.addEventListener('click', () => setState({ selectedArchiveItem: null }));
+
+      // Settings – Model selection
+      const sModel = document.getElementById('s-model');
+      if (sModel) sModel.addEventListener('change', () => {
+        localStorage.setItem('kde_model', sModel.value);
+        setState({ model: sModel.value });
+        showToast(`Modell: ${sModel.value}`);
+      });
+
+      // Settings – Check connection
+      const btnCheckConn = document.getElementById('btn-check-connection');
+      if (btnCheckConn) btnCheckConn.addEventListener('click', checkServerConnection);
+
+      // Settings – Clear archive
+      const btnClearArchive = document.getElementById('btn-clear-archive');
+      if (btnClearArchive) btnClearArchive.addEventListener('click', () => {
+        if (confirm('Alle archivierten Skripte löschen?')) {
+          state.archive = [];
+          localStorage.setItem('kde_archive', '[]');
+          render();
+          showToast('Archiv geleert');
+        }
+      });
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ============================================================
+    // SERVER CONNECTION CHECK
+    // ============================================================
+    async function checkServerConnection() {
+      try {
+        const res = await fetch('/api/status', { signal: AbortSignal.timeout(3000) });
+        if (res.ok) {
+          const data = await res.json();
+          setState({ apiConnected: true });
+          showToast('Server verbunden – ' + data.provider);
+        } else {
+          setState({ apiConnected: false });
+        }
+      } catch {
+        setState({ apiConnected: false });
+      }
+    }
+
+    // ============================================================
+    // PASSWORD PROTECTION
+    // ============================================================
+    const PASSWORD_HASH = '69ecaa44d7cc98f1ffccc5b2632a4225180993b717d8f1e71a811437d2fafc73';
+
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function initApp() {
+      document.getElementById('login-overlay').style.display = 'none';
+      document.getElementById('app').style.display = '';
+      render();
+      checkServerConnection();
+      setInterval(checkServerConnection, 30000);
+    }
+
+    // Check if already authenticated in this session
+    if (sessionStorage.getItem('kde_auth') === 'true') {
+      initApp();
+    } else {
+      document.getElementById('login-overlay').style.display = '';
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('login-password');
+      const errorEl = document.getElementById('login-error');
+      const hash = await sha256(input.value);
+
+      if (hash === PASSWORD_HASH) {
+        sessionStorage.setItem('kde_auth', 'true');
+        document.getElementById('login-overlay').style.opacity = '0';
+        document.getElementById('login-overlay').style.transition = 'opacity 0.3s ease';
+        setTimeout(initApp, 300);
+      } else {
+        input.classList.add('error');
+        errorEl.textContent = 'Falsches Passwort. Bitte erneut versuchen.';
+        setTimeout(() => input.classList.remove('error'), 500);
+        input.value = '';
+        input.focus();
+      }
+    });
+  </script>
+</body>
+
+</html>

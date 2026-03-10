@@ -1,0 +1,11 @@
+# macOS
+.DS_Store
+._*
+
+# Environment
+.env
+.tmp/
+
+# Credentials
+credentials.json
+token.json
