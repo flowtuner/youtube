@@ -1440,11 +1440,22 @@
     // API INTEGRATION
     // ============================================================
 
+    // Determine if the selected script language is English
+    function isScriptEnglish() {
+      const lang = (state.language || '').toLowerCase();
+      return lang === 'english' || lang === 'englisch' || lang === 'en';
+    }
+
     function buildSystemPrompt() {
+      const en = isScriptEnglish();
       const allThinkers = getThinkersList();
+      const langKey = en ? 'en' : 'de';
+
       const thinkerNames = state.selectedThinkers.map(id => {
         const th = allThinkers.find(x => x.id === id);
-        return th ? `${th.name} (${typeof th.role === 'object' ? th.role.de : th.role})` : id;
+        if (!th) return id;
+        const role = typeof th.role === 'object' ? (th.role[langKey] || th.role.de) : th.role;
+        return `${th.name} (${role})`;
       }).join(', ');
 
       const allFrameworks = getFrameworksList();
@@ -1453,6 +1464,103 @@
         return f ? f.name : id;
       }).join(', ');
 
+      const thinkerRoles = allThinkers.filter(tk => state.selectedThinkers.includes(tk.id)).map(tk => {
+        const role = typeof tk.role === 'object' ? (tk.role[langKey] || tk.role.de) : tk.role;
+        const desc = typeof tk.description === 'object' ? (tk.description[langKey] || tk.description.de) : (tk.description || role);
+        const req = en ? ' (REQUIRED)' : ' (PFLICHT)';
+        return `- ${tk.name}${tk.required ? req : ''}: ${desc}`;
+      }).join('\n');
+
+      const frameworkDetails = allFrameworks.filter(fw => state.selectedFrameworks.includes(fw.id)).map(fw => {
+        const desc = typeof fw.description === 'object' ? (fw.description[langKey] || fw.description.de) : (fw.description || fw.name);
+        return `- ${fw.name}: ${desc}`;
+      }).join('\n');
+
+      if (en) {
+        return `You are the orchestrator of the "Circle of Excellence" – a YouTube Ad Script Generator that brings together marketing thinkers from different eras in a simulated debate.
+
+TARGET AUDIENCE: Skeptical scientists (primarily toxicologists) who need to be convinced about AI software tools and community memberships.
+
+YOUR PROCESS:
+1. Analyze the briefing
+2. Let the selected thinkers debate – each brings their perspective
+3. Synthesize the best script from the debate
+4. Apply the Scientist Filter (no buzzwords, no hype language, AI as augmentation not replacement)
+5. Deliver A/B test variants
+
+IMPORTANT: The entire output – debate, script, spoken text, headings, A/B variants, everything – MUST be written in English.
+
+SELECTED THINKERS for this script: ${thinkerNames}
+
+THINKER ROLES:
+${thinkerRoles}
+
+SELECTED FRAMEWORKS: ${frameworkNames}
+
+FRAMEWORK DETAILS:
+${frameworkDetails}
+
+SCIENTIST FILTER (REQUIRED):
+❌ No buzzwords: "revolutionary", "disruptive", "groundbreaking", "game-changer"
+❌ No exaggerated claims without data
+❌ No "AI replaces you" – ALWAYS "AI augments your capabilities"
+❌ No artificial urgency
+✅ Precise domain-specific language of the target audience
+✅ Transparency about limitations (builds trust)
+✅ Peer validation instead of marketing testimonials
+✅ Education before selling
+✅ Respect and celebrate the target audience's skepticism
+
+OUTPUT FORMAT:
+Structure your output in Markdown exactly like this:
+
+# [Working title of the script]
+
+## The Debate
+[Brief, vivid summary: Which thinker argued what? Where was there dissent? What decisions were made and why?]
+
+## The Script
+
+### HOOK (0-5s)
+**Visual:** [Description]
+**Audio:** "[Exact spoken text]"
+**Rationale:** [Which thinker/framework and why]
+
+### ENGAGEMENT (5-15s)
+**Visual:** [Description]
+**Audio:** "[Exact spoken text]"
+**Rationale:** [Which thinker/framework and why]
+
+### MECHANISM (15-30s)
+**Visual:** [Description]
+**Audio:** "[Exact spoken text]"
+**Rationale:** [Which thinker/framework and why]
+
+### PROOF (30-45s)
+**Visual:** [Description]
+**Audio:** "[Exact spoken text]"
+**Rationale:** [Which thinker/framework and why]
+
+### CTA (45-60s)
+**Visual:** [Description]
+**Audio:** "[Exact spoken text]"
+**Rationale:** [Which thinker/framework and why]
+
+## A/B Test Variants
+### Hook Variant A
+[Alternative hook with rationale]
+### Hook Variant B
+[Alternative hook with rationale]
+### CTA Variant
+[Alternative CTA with rationale]
+
+## Performance Hypotheses
+- Expected VTR: [Estimate with rationale]
+- Skip risk point: [Second, why]
+- Recommended first A/B test: [What to test first]`;
+      }
+
+      // German version (default)
       return `Du bist der Orchestrator des "Kreis der Exzellenz" – ein YouTube Ad Script Generator, der Marketing-Denker aus verschiedenen Epochen in einer simulierten Debatte zusammenbringt.
 
 ZIELGRUPPE: Skeptische Scientists (primär Toxikolog:innen), die von KI-Software-Tools und Community-Memberships überzeugt werden sollen.
@@ -1464,22 +1572,17 @@ DEIN PROZESS:
 4. Wende den Scientist-Filter an (keine Buzzwords, keine Hype-Sprache, KI als Erweiterung nicht Ersatz)
 5. Liefere A/B-Test-Varianten
 
+WICHTIG: Der gesamte Output – Debatte, Skript, Sprechtext, Überschriften, A/B-Varianten, alles – MUSS auf Deutsch geschrieben werden.
+
 AUSGEWÄHLTE DENKER für dieses Skript: ${thinkerNames}
 
 DENKER-ROLLEN:
-${allThinkers.filter(tk => state.selectedThinkers.includes(tk.id)).map(tk => {
-        const role = typeof tk.role === 'object' ? tk.role.de : tk.role;
-        const desc = typeof tk.description === 'object' ? tk.description.de : (tk.description || role);
-        return `- ${tk.name}${tk.required ? ' (PFLICHT)' : ''}: ${desc}`;
-      }).join('\n')}
+${thinkerRoles}
 
 GEWÄHLTE FRAMEWORKS: ${frameworkNames}
 
 FRAMEWORKS-DETAILS:
-${allFrameworks.filter(fw => state.selectedFrameworks.includes(fw.id)).map(fw => {
-        const desc = typeof fw.description === 'object' ? fw.description.de : (fw.description || fw.name);
-        return `- ${fw.name}: ${desc}`;
-      }).join('\n')}
+${frameworkDetails}
 
 SCIENTIST-FILTER (PFLICHT):
 ❌ Keine Buzzwords: "revolutionär", "disruptiv", "bahnbrechend", "game-changer"
@@ -1542,6 +1645,24 @@ Strukturiere dein Output in Markdown genau so:
     }
 
     function buildUserPrompt() {
+      const en = isScriptEnglish();
+
+      if (en) {
+        return `BRIEFING:
+
+Product: ${state.product}
+Product name: ${state.productName || t('prompt.noName')}
+Core promise: ${state.corePromise || t('prompt.noPromise')}
+Unique mechanism: ${state.uniqueMechanism || t('prompt.noMechanism')}
+Awareness level: ${state.awareness}
+Language: English
+Tonality: ${state.tonality}
+Target length: ${state.duration}
+${state.additionalContext ? `\nAdditional context:\n${state.additionalContext}` : ''}
+
+Please generate the script now. Let the circle debate and deliver the result in the specified format. The entire output MUST be in English.`;
+      }
+
       return `BRIEFING:
 
 Produkt: ${state.product}
@@ -1549,12 +1670,12 @@ Produktname: ${state.productName || t('prompt.noName')}
 Kernversprechen: ${state.corePromise || t('prompt.noPromise')}
 Unique Mechanism: ${state.uniqueMechanism || t('prompt.noMechanism')}
 Awareness-Level: ${state.awareness}
-Sprache: ${state.language}
+Sprache: Deutsch
 Tonalität: ${state.tonality}
 Ziellänge: ${state.duration}
 ${state.additionalContext ? `\nZusätzlicher Kontext:\n${state.additionalContext}` : ''}
 
-Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Ergebnis im vorgegebenen Format.`;
+Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Ergebnis im vorgegebenen Format. Der gesamte Output MUSS auf Deutsch sein.`;
     }
 
     async function analyzeFramework(scriptText) {
