@@ -1,0 +1,8 @@
+{
+    "name": "youtube-script-generator",
+    "version": "1.0.0",
+    "main": "server.js",
+    "dependencies": {
+          "dotenv": "^16.0.0"
+    }
+}
