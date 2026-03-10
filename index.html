@@ -4,21 +4,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kreis der Exzellenz – YouTube Ad Script Generator</title>
+  <title>Science Tube — YouTube Ad Script Generator</title>
   <style>
     :root {
-      --bg: #0a0a0f;
-      --bg-card: #12121a;
-      --bg-card-hover: #1a1a25;
-      --bg-input: #0e0e16;
-      --border: #2a2a3a;
-      --border-focus: #6366f1;
+      --bg: #111111;
+      --bg-card: #1a1a1a;
+      --bg-card-hover: #252525;
+      --bg-input: #141414;
+      --border: #2a2a2a;
+      --border-focus: #ef4444;
       --text: #e4e4e7;
       --text-dim: #71717a;
       --text-bright: #fafafa;
-      --accent: #6366f1;
-      --accent-hover: #818cf8;
-      --accent-dim: rgba(99, 102, 241, 0.15);
+      --accent: #ef4444;
+      --accent-hover: #f87171;
+      --accent-dim: rgba(239, 68, 68, 0.15);
       --green: #22c55e;
       --green-dim: rgba(34, 197, 94, 0.15);
       --amber: #f59e0b;
@@ -47,61 +47,88 @@
     /* Layout */
     .app {
       display: flex;
+      flex-direction: column;
       min-height: 100vh;
     }
 
-    .sidebar {
-      width: 280px;
+    /* Top Navbar */
+    .navbar {
       background: var(--bg-card);
-      border-right: 1px solid var(--border);
-      padding: 24px 16px;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
       display: flex;
-      flex-direction: column;
+      align-items: center;
       gap: 8px;
       position: fixed;
       top: 0;
       left: 0;
-      bottom: 0;
-      overflow-y: auto;
+      right: 0;
+      height: 56px;
+      z-index: 100;
     }
 
     .main {
-      margin-left: 280px;
+      margin-top: 56px;
       flex: 1;
       padding: 32px 48px 80px;
-      max-width: 1000px;
-      height: 100vh;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+      height: calc(100vh - 56px);
       overflow-y: auto;
+      width: 100%;
     }
 
-    /* Sidebar */
+    /* Navbar */
     .logo {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
-      letter-spacing: 0.5px;
-      color: var(--accent);
-      padding: 8px 12px;
-      margin-bottom: 16px;
+      letter-spacing: 0.3px;
+      color: var(--text-bright);
+      padding: 0 8px 0 0;
+      margin-right: 16px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      white-space: nowrap;
     }
 
     .logo-icon {
-      font-size: 20px;
+      font-size: 22px;
+    }
+
+    .logo-brand {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+
+    .logo-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-bright);
+    }
+
+    .logo-sub {
+      font-size: 9px;
+      font-weight: 400;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
     .nav-item {
-      padding: 10px 12px;
-      border-radius: 8px;
+      padding: 8px 14px;
+      border-radius: 20px;
       cursor: pointer;
       font-size: 13px;
       color: var(--text-dim);
       transition: all 0.15s;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
       user-select: none;
+      white-space: nowrap;
     }
 
     .nav-item:hover {
@@ -110,53 +137,54 @@
     }
 
     .nav-item.active {
-      background: var(--accent-dim);
-      color: var(--accent);
+      background: var(--bg-card-hover);
+      color: var(--text-bright);
       font-weight: 600;
     }
 
     .nav-icon {
-      font-size: 16px;
-      width: 20px;
-      text-align: center;
+      font-size: 14px;
     }
 
     .nav-divider {
-      height: 1px;
+      width: 1px;
+      height: 20px;
       background: var(--border);
-      margin: 12px 0;
+      margin: 0 4px;
+    }
+
+    .nav-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .api-status {
-      margin-top: auto;
-      padding: 12px;
-      border-radius: 8px;
-      background: var(--bg);
-      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
       font-size: 11px;
+      color: var(--text-dim);
     }
 
     .lang-toggle {
-      padding: 8px 12px;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 20px;
       cursor: pointer;
       font-size: 12px;
       color: var(--text-dim);
       transition: all 0.15s;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       user-select: none;
-      background: var(--bg);
+      background: transparent;
       border: 1px solid var(--border);
-      margin-bottom: 8px;
       font-family: inherit;
-      width: 100%;
-      justify-content: center;
     }
 
     .lang-toggle:hover {
-      border-color: var(--accent);
+      border-color: var(--text-dim);
       color: var(--text);
     }
 
@@ -702,12 +730,21 @@
 
     /* Responsive */
     @media (max-width: 900px) {
-      .sidebar {
+      .navbar {
+        padding: 0 12px;
+        gap: 4px;
+      }
+
+      .nav-item {
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+
+      .logo-sub {
         display: none;
       }
 
       .main {
-        margin-left: 0;
         padding: 16px;
       }
 
@@ -891,8 +928,8 @@
   <!-- Password Protection (rendered dynamically for i18n) -->
   <div id="login-overlay" class="login-overlay">
     <div class="login-box">
-      <div class="login-logo">🌠</div>
-      <div class="login-title">Kreis der Exzellenz</div>
+      <div class="login-logo">🔬</div>
+      <div class="login-title">Science Tube</div>
       <div class="login-subtitle" id="login-subtitle"></div>
       <form id="login-form" autocomplete="off">
         <input type="password" class="login-input" id="login-password" autofocus>
@@ -1489,7 +1526,7 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
       const app = document.getElementById('app');
       app.innerHTML = `
     <div class="app">
-      ${renderSidebar()}
+      ${renderNavbar()}
       <div class="main">
         ${state.page === 'generate' ? renderGeneratePage() : ''}
         ${state.page === 'output' ? renderOutputPage() : ''}
@@ -1503,11 +1540,17 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
       bindEvents();
     }
 
-    function renderSidebar() {
+    function renderNavbar() {
       const loc = getLocale();
       return `
-    <div class="sidebar">
-      <div class="logo"><span class="logo-icon">🌠</span> Kreis der Exzellenz</div>
+    <div class="navbar">
+      <div class="logo">
+        <span class="logo-icon">🔬</span>
+        <div class="logo-brand">
+          <span class="logo-name">Science Tube</span>
+          <span class="logo-sub">By the Circle of Excellence</span>
+        </div>
+      </div>
 
       <div class="nav-item ${state.page === 'generate' ? 'active' : ''}" data-page="generate">
         <span class="nav-icon">✦</span> ${t('nav.generate')}
@@ -1516,7 +1559,7 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
         <span class="nav-icon">📄</span> ${t('nav.output')}
       </div>
       <div class="nav-item ${state.page === 'archive' ? 'active' : ''}" data-page="archive">
-        <span class="nav-icon">📚</span> ${t('nav.archive')} <span style="color:var(--text-dim);font-size:11px;margin-left:auto">${state.archive.length}</span>
+        <span class="nav-icon">📚</span> ${t('nav.archive')} <span style="color:var(--text-dim);font-size:11px;margin-left:2px">${state.archive.length > 0 ? state.archive.length : ''}</span>
       </div>
 
       <div class="nav-divider"></div>
@@ -1524,20 +1567,17 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
       <div class="nav-item ${state.page === 'thinkers' ? 'active' : ''}" data-page="thinkers">
         <span class="nav-icon">🧠</span> ${t('nav.thinkers')}
       </div>
-
-      <div class="nav-divider"></div>
-
       <div class="nav-item ${state.page === 'settings' ? 'active' : ''}" data-page="settings">
         <span class="nav-icon">⚙</span> ${t('nav.settings')}
       </div>
 
-      <button class="lang-toggle" id="btn-lang-toggle">
-        ${loc === 'de' ? t('lang.switch_to_en') : t('lang.switch_to_de')}
-      </button>
-
-      <div class="api-status">
-        <span class="api-dot ${state.apiConnected ? 'connected' : 'disconnected'}"></span>
-        ${state.apiConnected ? t('api.connected') : t('api.disconnected')}
+      <div class="nav-right">
+        <button class="lang-toggle" id="btn-lang-toggle">
+          ${loc === 'de' ? t('lang.switch_to_en') : t('lang.switch_to_de')}
+        </button>
+        <div class="api-status">
+          <span class="api-dot ${state.apiConnected ? 'connected' : 'disconnected'}"></span>
+        </div>
       </div>
     </div>
   `;
