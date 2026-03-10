@@ -44,6 +44,17 @@
       overflow-x: hidden;
     }
 
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100vh;
+      background: var(--accent);
+      z-index: 200;
+    }
+
     /* Layout */
     .app {
       display: flex;
@@ -106,7 +117,7 @@
     .logo-name {
       font-size: 15px;
       font-weight: 700;
-      color: var(--text-bright);
+      color: var(--accent);
     }
 
     .logo-sub {
