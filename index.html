@@ -1138,27 +1138,47 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
+        let sseBuffer = ''; // Buffer for incomplete SSE lines across chunks
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value);
-          const lines = chunk.split('\n');
+          // stream: true ensures multi-byte UTF-8 chars (ä,ö,ü) aren't corrupted at chunk boundaries
+          sseBuffer += decoder.decode(value, { stream: true });
 
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              if (data === '[DONE]') continue;
-              try {
-                const parsed = JSON.parse(data);
-                if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-                  fullOutput += parsed.delta.text;
-                  state.currentOutput = fullOutput;
-                  render();
-                }
-              } catch (e) { /* skip parse errors */ }
-            }
+          // Process only complete lines (ending with \n), keep the rest in buffer
+          const parts = sseBuffer.split('\n');
+          sseBuffer = parts.pop(); // Last element may be incomplete — keep in buffer
+
+          for (const line of parts) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith('data: ')) continue;
+            const data = trimmed.slice(6);
+            if (data === '[DONE]') continue;
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                fullOutput += parsed.delta.text;
+                state.currentOutput = fullOutput;
+                render();
+              }
+            } catch (e) { /* incomplete JSON — will be completed in next chunk */ }
+          }
+        }
+
+        // Flush any remaining buffer
+        if (sseBuffer.trim().startsWith('data: ')) {
+          const data = sseBuffer.trim().slice(6);
+          if (data !== '[DONE]') {
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                fullOutput += parsed.delta.text;
+                state.currentOutput = fullOutput;
+                render();
+              }
+            } catch (e) { /* final chunk wasn't complete JSON */ }
           }
         }
 
