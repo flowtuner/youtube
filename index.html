@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" suppressHydrationWarning>
 
 <head>
   <meta charset="UTF-8">
@@ -134,6 +134,30 @@
       background: var(--bg);
       border: 1px solid var(--border);
       font-size: 11px;
+    }
+
+    .lang-toggle {
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text-dim);
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      font-family: inherit;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .lang-toggle:hover {
+      border-color: var(--accent);
+      color: var(--text);
     }
 
     .api-dot {
@@ -864,17 +888,18 @@
 
 <body>
 
-  <!-- Password Protection -->
+  <!-- Password Protection (rendered dynamically for i18n) -->
   <div id="login-overlay" class="login-overlay">
     <div class="login-box">
       <div class="login-logo">🌠</div>
       <div class="login-title">Kreis der Exzellenz</div>
-      <div class="login-subtitle">Zugang nur für autorisierte Nutzer</div>
+      <div class="login-subtitle" id="login-subtitle"></div>
       <form id="login-form" autocomplete="off">
-        <input type="password" class="login-input" id="login-password" placeholder="Passwort eingeben" autofocus>
-        <button type="submit" class="login-btn">Zugang erhalten</button>
+        <input type="password" class="login-input" id="login-password" autofocus>
+        <button type="submit" class="login-btn" id="login-btn"></button>
         <div class="login-error" id="login-error"></div>
       </form>
+      <button class="lang-toggle" id="login-lang-toggle" style="margin-top:16px"></button>
     </div>
   </div>
 
@@ -886,42 +911,262 @@
     // Kreis der Exzellenz – YouTube Ad Script Generator
     // ============================================================
 
+    // ============================================================
+    // i18n — TRANSLATION SYSTEM
+    // ============================================================
+
+    function getLocale() { return localStorage.getItem('kde_locale') || 'de'; }
+    function setLocale(loc) {
+      localStorage.setItem('kde_locale', loc);
+      document.documentElement.lang = loc;
+      updateLoginI18n();
+      render();
+    }
+
+    function t(key, vars) {
+      const entry = I18N[key];
+      if (!entry) return key;
+      const loc = getLocale();
+      let text = entry[loc] || entry['de'] || key;
+      if (vars) {
+        for (const [k, v] of Object.entries(vars)) {
+          text = text.replace(new RegExp(`{{${k}}}`, 'g'), v);
+        }
+      }
+      return text;
+    }
+
+    const I18N = {
+      // --- Login ---
+      'login.subtitle': { de: 'Zugang nur für autorisierte Nutzer', en: 'Authorized users only' },
+      'login.placeholder': { de: 'Passwort eingeben', en: 'Enter password' },
+      'login.button': { de: 'Zugang erhalten', en: 'Get access' },
+      'login.error': { de: 'Falsches Passwort. Bitte erneut versuchen.', en: 'Wrong password. Please try again.' },
+
+      // --- Navigation ---
+      'nav.generate': { de: 'Skript generieren', en: 'Generate script' },
+      'nav.output': { de: 'Aktuelles Skript', en: 'Current script' },
+      'nav.archive': { de: 'Archiv', en: 'Archive' },
+      'nav.thinkers': { de: 'Denker-Panel', en: 'Thinker Panel' },
+      'nav.settings': { de: 'Einstellungen', en: 'Settings' },
+
+      // --- API Status ---
+      'api.connected': { de: 'Anthropic verbunden', en: 'Anthropic connected' },
+      'api.disconnected': { de: 'Server nicht verbunden', en: 'Server not connected' },
+
+      // --- Language Toggle ---
+      'lang.switch_to_en': { de: '🇬🇧 English', en: '🇬🇧 English' },
+      'lang.switch_to_de': { de: '🇩🇪 Deutsch', en: '🇩🇪 Deutsch' },
+
+      // --- Generate Page ---
+      'gen.title': { de: 'Skript generieren', en: 'Generate script' },
+      'gen.subtitle': { de: 'Briefing ausfüllen → Denker wählen → Kreis debattieren lassen', en: 'Fill briefing → Select thinkers → Let the circle debate' },
+      'gen.briefing': { de: 'Briefing', en: 'Briefing' },
+      'gen.product': { de: 'Produkt', en: 'Product' },
+      'gen.language': { de: 'Sprache', en: 'Language' },
+      'gen.duration': { de: 'Ziellänge', en: 'Target length' },
+      'gen.productName': { de: 'Produktname', en: 'Product name' },
+      'gen.productName.placeholder': { de: 'z.B. ToxScope, ChemAssist, DataPeer...', en: 'e.g. ToxScope, ChemAssist, DataPeer...' },
+      'gen.corePromise': { de: 'Kernversprechen', en: 'Core promise' },
+      'gen.corePromise.placeholder': { de: 'Was ist das eine Ergebnis, das die Zielgruppe erreicht?', en: 'What is the one outcome the target audience achieves?' },
+      'gen.uniqueMechanism': { de: 'Unique Mechanism', en: 'Unique Mechanism' },
+      'gen.uniqueMechanism.placeholder': { de: 'Was macht dieses Produkt anders? (Leer lassen = Kreis schlägt vor)', en: 'What makes this product different? (Leave empty = Circle will suggest)' },
+      'gen.awareness': { de: 'Awareness-Level', en: 'Awareness level' },
+      'gen.tonality': { de: 'Tonalität', en: 'Tonality' },
+      'gen.context': { de: 'Zusätzlicher Kontext', en: 'Additional context' },
+      'gen.context.optional': { de: '(optional)', en: '(optional)' },
+      'gen.context.placeholder': { de: 'Besondere Anforderungen, Zielgruppen-Details, vorherige Testergebnisse...', en: 'Special requirements, audience details, previous test results...' },
+      'gen.thinkerPanel': { de: 'Denker-Panel', en: 'Thinker Panel' },
+      'gen.thinkerPanel.selected': { de: '{{count}} ausgewählt', en: '{{count}} selected' },
+      'gen.frameworks': { de: 'Frameworks', en: 'Frameworks' },
+      'gen.frameworks.selected': { de: '{{count}} ausgewählt', en: '{{count}} selected' },
+      'gen.button': { de: '🌠 Kreis einberufen & generieren', en: '🌠 Convene circle & generate' },
+
+      // --- Output Page ---
+      'out.generating': { de: 'Skript wird generiert...', en: 'Generating script...' },
+      'out.debateInfo': { de: 'Der Kreis der Exzellenz debattiert über Ihr Skript.', en: 'The Circle of Excellence is debating your script.' },
+      'out.title': { de: 'Aktuelles Skript', en: 'Current script' },
+      'out.noScript': { de: 'Noch kein Skript generiert. Starten Sie auf der Generieren-Seite.', en: 'No script generated yet. Start on the Generate page.' },
+      'out.live': { de: '● Live', en: '● Live' },
+      'out.tab.script': { de: 'Skript', en: 'Script' },
+      'out.tab.markdown': { de: 'Markdown', en: 'Markdown' },
+      'out.copy': { de: '📋 Kopieren', en: '📋 Copy' },
+
+      // --- Archive Page ---
+      'archive.title': { de: 'Skript-Archiv', en: 'Script archive' },
+      'archive.subtitle': { de: '{{count}} Skripte gespeichert', en: '{{count}} scripts saved' },
+      'archive.empty': { de: 'Noch keine Skripte generiert.', en: 'No scripts generated yet.' },
+      'archive.back': { de: '← Zurück zur Liste', en: '← Back to list' },
+
+      // --- Thinkers Page ---
+      'thinkers.title': { de: 'Denker-Panel', en: 'Thinker Panel' },
+      'thinkers.subtitle': { de: '{{count}} Denker verfügbar · Scientist Whisperer ist immer dabei', en: '{{count}} thinkers available · Scientist Whisperer is always included' },
+      'thinkers.required': { de: 'PFLICHT', en: 'REQUIRED' },
+      'thinkers.active': { de: '✓ Aktiv', en: '✓ Active' },
+      'thinkers.inactive': { de: 'Inaktiv', en: 'Inactive' },
+      'thinkers.requiredDesc': { de: 'Pflicht-Mitglied mit Veto-Recht. Wird bei jedem Skript automatisch einbezogen.', en: 'Required member with veto power. Automatically included in every script.' },
+
+      // --- Settings Page ---
+      'settings.title': { de: 'Einstellungen', en: 'Settings' },
+      'settings.subtitle': { de: 'Server-Verbindung und Modell-Konfiguration', en: 'Server connection and model configuration' },
+      'settings.serverStatus': { de: 'Server-Status', en: 'Server status' },
+      'settings.connected': { de: 'Server verbunden – Anthropic API aktiv', en: 'Server connected – Anthropic API active' },
+      'settings.disconnected': { de: 'Server nicht erreichbar', en: 'Server not reachable' },
+      'settings.connectedDesc': { de: 'Der API-Key wird sicher auf dem Server in der .env-Datei gespeichert.', en: 'The API key is stored securely on the server in the .env file.' },
+      'settings.disconnectedDesc': { de: 'Starte den Server mit', en: 'Start the server with' },
+      'settings.disconnectedDesc2': { de: 'im Projektordner.', en: 'in the project folder.' },
+      'settings.checkConnection': { de: 'Verbindung prüfen', en: 'Check connection' },
+      'settings.model': { de: 'Modell', en: 'Model' },
+      'settings.modelSelect': { de: 'Claude-Modell auswählen', en: 'Select Claude model' },
+      'settings.opusDesc': { de: 'Claude Opus 4.6 – Höchste Qualität, langsamer', en: 'Claude Opus 4.6 – Highest quality, slower' },
+      'settings.sonnetDesc': { de: 'Claude Sonnet 4.6 – Schnell und sehr gut (empfohlen)', en: 'Claude Sonnet 4.6 – Fast and very good (recommended)' },
+      'settings.opusInfo': { de: 'liefert die tiefsten Debatten und kreativsten Skripte. Ideal für wichtige Kampagnen.', en: 'delivers the deepest debates and most creative scripts. Ideal for important campaigns.' },
+      'settings.sonnetInfo': { de: 'ist schneller und günstiger – perfekt für A/B-Test-Varianten und Iterationen.', en: 'is faster and more affordable – perfect for A/B test variants and iterations.' },
+      'settings.data': { de: 'Daten', en: 'Data' },
+      'settings.clearArchive': { de: 'Archiv leeren', en: 'Clear archive' },
+      'settings.archiveCount': { de: '{{count}} Skripte gespeichert (im Browser)', en: '{{count}} scripts saved (in browser)' },
+      'settings.setup': { de: 'Setup-Anleitung', en: 'Setup guide' },
+      'settings.step1': { de: 'Erstelle einen API-Key auf', en: 'Create an API key at' },
+      'settings.step2': { de: 'Öffne die Datei', en: 'Open the file' },
+      'settings.step2b': { de: 'im Projektordner', en: 'in the project folder' },
+      'settings.step3': { de: 'Ersetze', en: 'Replace' },
+      'settings.step3b': { de: 'durch deinen echten Key', en: 'with your real key' },
+      'settings.step4': { de: 'Starte den Server:', en: 'Start the server:' },
+      'settings.step5': { de: 'Öffne', en: 'Open' },
+      'settings.step5b': { de: 'im Browser', en: 'in the browser' },
+
+      // --- Toasts ---
+      'toast.generated': { de: 'Skript generiert und archiviert', en: 'Script generated and archived' },
+      'toast.copied': { de: 'In Zwischenablage kopiert', en: 'Copied to clipboard' },
+      'toast.deleted': { de: 'Skript gelöscht', en: 'Script deleted' },
+      'toast.archiveCleared': { de: 'Archiv geleert', en: 'Archive cleared' },
+      'toast.serverConnected': { de: 'Server verbunden – ', en: 'Server connected – ' },
+      'toast.serverError': { de: 'Server nicht verbunden – starte den Server mit: node server.js', en: 'Server not connected – start the server with: node server.js' },
+
+      // --- Generating Phases ---
+      'phase.0': { de: 'Briefing wird analysiert...', en: 'Analyzing briefing...' },
+      'phase.1': { de: 'Denker werden einberufen...', en: 'Convening thinkers...' },
+      'phase.2': { de: 'Debatte läuft...', en: 'Debate in progress...' },
+      'phase.3': { de: 'Scientist Whisperer prüft...', en: 'Scientist Whisperer reviewing...' },
+      'phase.4': { de: 'Skript wird synthetisiert...', en: 'Synthesizing script...' },
+      'phase.5': { de: 'A/B-Varianten werden generiert...', en: 'Generating A/B variants...' },
+
+      // --- Errors ---
+      'error.prefix': { de: '**Fehler:**', en: '**Error:**' },
+      'error.checkApi': { de: 'Bitte API-Key und Provider in den Einstellungen prüfen.', en: 'Please check the API key and provider in settings.' },
+
+      // --- Confirm ---
+      'confirm.clearArchive': { de: 'Alle archivierten Skripte löschen?', en: 'Delete all archived scripts?' },
+
+      // --- User Prompt Defaults ---
+      'prompt.noName': { de: '[Noch nicht benannt – verwende einen Platzhalter]', en: '[Not yet named – use a placeholder]' },
+      'prompt.noPromise': { de: '[Nicht angegeben – leite es aus dem Kontext ab]', en: '[Not specified – derive from context]' },
+      'prompt.noMechanism': { de: '[Noch nicht definiert – der Kreis soll einen vorschlagen]', en: '[Not yet defined – the circle should suggest one]' },
+    };
+
+    // ============================================================
+    // Thinker description helper (bilingual)
+    // ============================================================
+    function getThinkerDesc(role) {
+      const descs = {
+        'Awareness-Stratege': { de: 'die richtige Awareness-Stufe bestimmen musst', en: 'you need to determine the right awareness level' },
+        'Offer-Architekt': { de: 'den Offer optimieren und den wahrgenommenen Wert maximieren willst', en: 'you want to optimize the offer and maximize perceived value' },
+        'Story-Architekt': { de: 'eine narrative Brücke und emotionale Verbindung brauchst', en: 'you need a narrative bridge and emotional connection' },
+        'Qualitätswächter': { de: 'sicherstellen willst, dass jedes Wort auf Fakten basiert', en: 'you want to ensure every word is fact-based' },
+        'Mechanism-Ingenieur': { de: 'erklären musst, WARUM dein Ansatz funktioniert', en: 'you need to explain WHY your approach works' },
+        'Intensifier': { de: 'die emotionale Wirkung des Problems verstärken willst', en: 'you want to intensify the emotional impact of the problem' },
+        'Aufmerksamkeits-Ingenieur': { de: 'einen unvergesslichen Hook brauchst', en: 'you need an unforgettable hook' },
+        'Trust-Architekt': { de: 'Vertrauen aufbauen willst, bevor du verkaufst', en: 'you want to build trust before selling' },
+        'Research-Master': { de: 'modulare, testbare Copy-Elemente brauchst', en: 'you need modular, testable copy elements' },
+        'Visual Storytellers': { de: 'visuelle Demo-Konzepte für Video brauchst', en: 'you need visual demo concepts for video' },
+        'ROI-Wächter': { de: 'messbare Ergebnisse und harte CTAs brauchst', en: 'you need measurable results and hard CTAs' },
+        'Curiosity-Meister': { de: 'Neugier und Open Loops erzeugen willst', en: 'you want to create curiosity and open loops' },
+      };
+      const d = descs[role];
+      if (!d) return '';
+      const loc = getLocale();
+      const prefix = loc === 'en' ? 'Select this thinker when ' : 'Wähle diesen Denker, wenn du ';
+      const suffix = loc === 'en' ? '.' : '.';
+      return prefix + (d[loc] || d['de']) + suffix;
+    }
+
+    // ============================================================
+    // DATA CONSTANTS (bilingual via t())
+    // ============================================================
+
     const THINKERS = [
-      { id: 'scientist_whisperer', name: 'Scientist Whisperer', role: 'Zielgruppen-Wächter', required: true, emoji: '🔬' },
-      { id: 'eugene_schwartz', name: 'Eugene Schwartz', role: 'Awareness-Stratege', required: false, emoji: '🎯' },
-      { id: 'alex_hormozi', name: 'Alex Hormozi', role: 'Offer-Architekt', required: false, emoji: '💰' },
-      { id: 'russell_brunson', name: 'Russell Brunson', role: 'Story-Architekt', required: false, emoji: '📖' },
-      { id: 'david_ogilvy', name: 'David Ogilvy', role: 'Qualitätswächter', required: false, emoji: '🎩' },
-      { id: 'todd_brown', name: 'Todd Brown', role: 'Mechanism-Ingenieur', required: false, emoji: '⚙️' },
-      { id: 'sabri_suby', name: 'Sabri Suby', role: 'Intensifier', required: false, emoji: '🔥' },
-      { id: 'billy_gene', name: 'Billy Gene Shaw', role: 'Aufmerksamkeits-Ingenieur', required: false, emoji: '⚡' },
-      { id: 'frank_kern', name: 'Frank Kern', role: 'Trust-Architekt', required: false, emoji: '🤝' },
-      { id: 'stefan_georgi', name: 'Stefan Georgi', role: 'Research-Master', required: false, emoji: '🔍' },
-      { id: 'harmon_brothers', name: 'Harmon Brothers', role: 'Visual Storytellers', required: false, emoji: '🎬' },
-      { id: 'dan_kennedy', name: 'Dan Kennedy', role: 'ROI-Wächter', required: false, emoji: '📊' },
-      { id: 'gary_halbert', name: 'Gary Halbert', role: 'Curiosity-Meister', required: false, emoji: '🪝' },
+      { id: 'scientist_whisperer', name: 'Scientist Whisperer', role: { de: 'Zielgruppen-Wächter', en: 'Audience Guardian' }, required: true, emoji: '🔬' },
+      { id: 'eugene_schwartz', name: 'Eugene Schwartz', role: { de: 'Awareness-Stratege', en: 'Awareness Strategist' }, required: false, emoji: '🎯' },
+      { id: 'alex_hormozi', name: 'Alex Hormozi', role: { de: 'Offer-Architekt', en: 'Offer Architect' }, required: false, emoji: '💰' },
+      { id: 'russell_brunson', name: 'Russell Brunson', role: { de: 'Story-Architekt', en: 'Story Architect' }, required: false, emoji: '📖' },
+      { id: 'david_ogilvy', name: 'David Ogilvy', role: { de: 'Qualitätswächter', en: 'Quality Guardian' }, required: false, emoji: '🎩' },
+      { id: 'todd_brown', name: 'Todd Brown', role: { de: 'Mechanism-Ingenieur', en: 'Mechanism Engineer' }, required: false, emoji: '⚙️' },
+      { id: 'sabri_suby', name: 'Sabri Suby', role: { de: 'Intensifier', en: 'Intensifier' }, required: false, emoji: '🔥' },
+      { id: 'billy_gene', name: 'Billy Gene Shaw', role: { de: 'Aufmerksamkeits-Ingenieur', en: 'Attention Engineer' }, required: false, emoji: '⚡' },
+      { id: 'frank_kern', name: 'Frank Kern', role: { de: 'Trust-Architekt', en: 'Trust Architect' }, required: false, emoji: '🤝' },
+      { id: 'stefan_georgi', name: 'Stefan Georgi', role: { de: 'Research-Master', en: 'Research Master' }, required: false, emoji: '🔍' },
+      { id: 'harmon_brothers', name: 'Harmon Brothers', role: { de: 'Visual Storytellers', en: 'Visual Storytellers' }, required: false, emoji: '🎬' },
+      { id: 'dan_kennedy', name: 'Dan Kennedy', role: { de: 'ROI-Wächter', en: 'ROI Guardian' }, required: false, emoji: '📊' },
+      { id: 'gary_halbert', name: 'Gary Halbert', role: { de: 'Curiosity-Meister', en: 'Curiosity Master' }, required: false, emoji: '🪝' },
     ];
+
+    function tRole(thinker) {
+      return typeof thinker.role === 'object' ? (thinker.role[getLocale()] || thinker.role['de']) : thinker.role;
+    }
 
     const FRAMEWORKS = [
-      { id: 'evidence_first', name: 'Evidence-First', use: 'Wenn harte Daten vorhanden', score: 5 },
-      { id: 'pas_scientist', name: 'PAS for Scientists', use: 'Problem Aware Zielgruppe', score: 5 },
-      { id: 'unique_mechanism', name: 'Unique Mechanism + Educate', use: 'Gesättigter Markt (Stufe 3+)', score: 5 },
-      { id: 'hook_story_offer', name: 'Hook-Story-Offer', use: 'Wenn Gründer-Story existiert', score: 4 },
-      { id: 'value_stack', name: 'Value Stack (Hormozi)', use: 'Community/Premium-Produkte', score: 3 },
+      { id: 'evidence_first', name: 'Evidence-First', use: { de: 'Wenn harte Daten vorhanden', en: 'When hard data is available' }, score: 5 },
+      { id: 'pas_scientist', name: 'PAS for Scientists', use: { de: 'Problem Aware Zielgruppe', en: 'Problem aware audience' }, score: 5 },
+      { id: 'unique_mechanism', name: 'Unique Mechanism + Educate', use: { de: 'Gesättigter Markt (Stufe 3+)', en: 'Saturated market (Stage 3+)' }, score: 5 },
+      { id: 'hook_story_offer', name: 'Hook-Story-Offer', use: { de: 'Wenn Gründer-Story existiert', en: 'When founder story exists' }, score: 4 },
+      { id: 'value_stack', name: 'Value Stack (Hormozi)', use: { de: 'Community/Premium-Produkte', en: 'Community/premium products' }, score: 3 },
     ];
 
-    const AWARENESS_LEVELS = [
-      'Unaware – Weiß nicht, dass ein Problem existiert',
-      'Problem Aware – Kennt das Problem, nicht die Lösung',
-      'Solution Aware – Kennt Lösungstypen, nicht dein Produkt',
-      'Product Aware – Kennt dein Produkt, noch nicht überzeugt',
-      'Most Aware – Kennt und vertraut, braucht nur den Anstoß',
-    ];
+    function fUse(framework) {
+      return typeof framework.use === 'object' ? (framework.use[getLocale()] || framework.use['de']) : framework.use;
+    }
 
-    const TONALITIES = ['Sachlich-wissenschaftlich', 'Warm-kollegial', 'Provokativ-herausfordernd'];
+    const AWARENESS_LEVELS = {
+      de: [
+        'Unaware – Weiß nicht, dass ein Problem existiert',
+        'Problem Aware – Kennt das Problem, nicht die Lösung',
+        'Solution Aware – Kennt Lösungstypen, nicht dein Produkt',
+        'Product Aware – Kennt dein Produkt, noch nicht überzeugt',
+        'Most Aware – Kennt und vertraut, braucht nur den Anstoß',
+      ],
+      en: [
+        'Unaware – Doesn\'t know a problem exists',
+        'Problem Aware – Knows the problem, not the solution',
+        'Solution Aware – Knows solution types, not your product',
+        'Product Aware – Knows your product, not yet convinced',
+        'Most Aware – Knows and trusts, just needs a nudge',
+      ],
+    };
+
+    function getAwarenessLevels() { return AWARENESS_LEVELS[getLocale()] || AWARENESS_LEVELS['de']; }
+
+    const TONALITY_OPTIONS = {
+      de: ['Sachlich-wissenschaftlich', 'Warm-kollegial', 'Provokativ-herausfordernd'],
+      en: ['Objective-scientific', 'Warm-collegial', 'Provocative-challenging'],
+    };
+
+    function getTonalities() { return TONALITY_OPTIONS[getLocale()] || TONALITY_OPTIONS['de']; }
+
     const DURATIONS = ['30s', '60s', '90s', '120s'];
-    const LANGUAGES = ['Deutsch', 'Englisch'];
-    const PRODUCTS = ['Software-Tool', 'Community Membership', 'Beides'];
+
+    const LANGUAGE_OPTIONS = {
+      de: ['Deutsch', 'Englisch'],
+      en: ['German', 'English'],
+    };
+
+    function getLanguageOptions() { return LANGUAGE_OPTIONS[getLocale()] || LANGUAGE_OPTIONS['de']; }
+
+    const PRODUCT_OPTIONS = {
+      de: ['Software-Tool', 'Community Membership', 'Beides'],
+      en: ['Software Tool', 'Community Membership', 'Both'],
+    };
+
+    function getProductOptions() { return PRODUCT_OPTIONS[getLocale()] || PRODUCT_OPTIONS['de']; }
 
     // ============================================================
     // STATE
@@ -935,9 +1180,9 @@
       productName: '',
       corePromise: '',
       uniqueMechanism: '',
-      awareness: AWARENESS_LEVELS[1],
-      language: 'Deutsch',
-      tonality: TONALITIES[0],
+      awareness: getAwarenessLevels()[1],
+      language: getLanguageOptions()[0],
+      tonality: getTonalities()[0],
       duration: '60s',
       additionalContext: '',
       selectedThinkers: ['scientist_whisperer', 'eugene_schwartz', 'todd_brown', 'frank_kern'],
@@ -971,8 +1216,8 @@
 
     function buildSystemPrompt() {
       const thinkerNames = state.selectedThinkers.map(id => {
-        const t = THINKERS.find(x => x.id === id);
-        return t ? `${t.name} (${t.role})` : id;
+        const th = THINKERS.find(x => x.id === id);
+        return th ? `${th.name} (${th.role.de})` : id;
       }).join(', ');
 
       const frameworkNames = state.selectedFrameworks.map(id => {
@@ -1081,9 +1326,9 @@ Strukturiere dein Output in Markdown genau so:
       return `BRIEFING:
 
 Produkt: ${state.product}
-Produktname: ${state.productName || '[Noch nicht benannt – verwende einen Platzhalter]'}
-Kernversprechen: ${state.corePromise || '[Nicht angegeben – leite es aus dem Kontext ab]'}
-Unique Mechanism: ${state.uniqueMechanism || '[Noch nicht definiert – der Kreis soll einen vorschlagen]'}
+Produktname: ${state.productName || t('prompt.noName')}
+Kernversprechen: ${state.corePromise || t('prompt.noPromise')}
+Unique Mechanism: ${state.uniqueMechanism || t('prompt.noMechanism')}
 Awareness-Level: ${state.awareness}
 Sprache: ${state.language}
 Tonalität: ${state.tonality}
@@ -1095,19 +1340,19 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
 
     async function generateScript() {
       if (!state.apiConnected) {
-        showToast('Server nicht verbunden – starte den Server mit: node server.js');
+        showToast(t('toast.serverError'));
         setState({ page: 'settings' });
         return;
       }
 
-      setState({ isGenerating: true, currentOutput: '', generatingPhase: 'Briefing wird analysiert...', page: 'output' });
+      setState({ isGenerating: true, currentOutput: '', generatingPhase: t('phase.0'), page: 'output' });
 
       const phases = [
-        'Denker werden einberufen...',
-        'Debatte läuft...',
-        'Scientist Whisperer prüft...',
-        'Skript wird synthetisiert...',
-        'A/B-Varianten werden generiert...',
+        t('phase.1'),
+        t('phase.2'),
+        t('phase.3'),
+        t('phase.4'),
+        t('phase.5'),
       ];
 
       let phaseIndex = 0;
@@ -1228,11 +1473,11 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
         localStorage.setItem('kde_archive', JSON.stringify(state.archive));
 
         setState({ isGenerating: false });
-        showToast('Skript generiert und archiviert');
+        showToast(t('toast.generated'));
 
       } catch (err) {
         clearInterval(phaseInterval);
-        setState({ isGenerating: false, currentOutput: `**Fehler:** ${err.message}\n\nBitte API-Key und Provider in den Einstellungen prüfen.` });
+        setState({ isGenerating: false, currentOutput: `${t('error.prefix')} ${err.message}\n\n${t('error.checkApi')}` });
       }
     }
 
@@ -1259,35 +1504,40 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
     }
 
     function renderSidebar() {
+      const loc = getLocale();
       return `
     <div class="sidebar">
       <div class="logo"><span class="logo-icon">🌠</span> Kreis der Exzellenz</div>
 
       <div class="nav-item ${state.page === 'generate' ? 'active' : ''}" data-page="generate">
-        <span class="nav-icon">✦</span> Skript generieren
+        <span class="nav-icon">✦</span> ${t('nav.generate')}
       </div>
       <div class="nav-item ${state.page === 'output' ? 'active' : ''}" data-page="output">
-        <span class="nav-icon">📄</span> Aktuelles Skript
+        <span class="nav-icon">📄</span> ${t('nav.output')}
       </div>
       <div class="nav-item ${state.page === 'archive' ? 'active' : ''}" data-page="archive">
-        <span class="nav-icon">📚</span> Archiv <span style="color:var(--text-dim);font-size:11px;margin-left:auto">${state.archive.length}</span>
+        <span class="nav-icon">📚</span> ${t('nav.archive')} <span style="color:var(--text-dim);font-size:11px;margin-left:auto">${state.archive.length}</span>
       </div>
 
       <div class="nav-divider"></div>
 
       <div class="nav-item ${state.page === 'thinkers' ? 'active' : ''}" data-page="thinkers">
-        <span class="nav-icon">🧠</span> Denker-Panel
+        <span class="nav-icon">🧠</span> ${t('nav.thinkers')}
       </div>
 
       <div class="nav-divider"></div>
 
       <div class="nav-item ${state.page === 'settings' ? 'active' : ''}" data-page="settings">
-        <span class="nav-icon">⚙</span> Einstellungen
+        <span class="nav-icon">⚙</span> ${t('nav.settings')}
       </div>
+
+      <button class="lang-toggle" id="btn-lang-toggle">
+        ${loc === 'de' ? t('lang.switch_to_en') : t('lang.switch_to_de')}
+      </button>
 
       <div class="api-status">
         <span class="api-dot ${state.apiConnected ? 'connected' : 'disconnected'}"></span>
-        ${state.apiConnected ? 'Anthropic verbunden' : 'Server nicht verbunden'}
+        ${state.apiConnected ? t('api.connected') : t('api.disconnected')}
       </div>
     </div>
   `;
@@ -1296,28 +1546,28 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
     function renderGeneratePage() {
       return `
     <div class="page-header">
-      <div class="page-title">Skript generieren</div>
-      <div class="page-subtitle">Briefing ausfüllen → Denker wählen → Kreis debattieren lassen</div>
+      <div class="page-title">${t('gen.title')}</div>
+      <div class="page-subtitle">${t('gen.subtitle')}</div>
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="card-icon">📋</span> Briefing</div>
+      <div class="card-header"><span class="card-icon">📋</span> ${t('gen.briefing')}</div>
 
       <div class="form-row-3">
         <div>
-          <label>Produkt</label>
+          <label>${t('gen.product')}</label>
           <select id="f-product">
-            ${PRODUCTS.map(p => `<option ${state.product === p ? 'selected' : ''}>${p}</option>`).join('')}
+            ${getProductOptions().map(p => `<option ${state.product === p ? 'selected' : ''}>${p}</option>`).join('')}
           </select>
         </div>
         <div>
-          <label>Sprache</label>
+          <label>${t('gen.language')}</label>
           <select id="f-language">
-            ${LANGUAGES.map(l => `<option ${state.language === l ? 'selected' : ''}>${l}</option>`).join('')}
+            ${getLanguageOptions().map(l => `<option ${state.language === l ? 'selected' : ''}>${l}</option>`).join('')}
           </select>
         </div>
         <div>
-          <label>Ziellänge</label>
+          <label>${t('gen.duration')}</label>
           <select id="f-duration">
             ${DURATIONS.map(d => `<option ${state.duration === d ? 'selected' : ''}>${d}</option>`).join('')}
           </select>
@@ -1325,61 +1575,61 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
       </div>
 
       <div class="form-group">
-        <label>Produktname</label>
-        <input type="text" id="f-productName" value="${esc(state.productName)}" placeholder="z.B. ToxScope, ChemAssist, DataPeer...">
+        <label>${t('gen.productName')}</label>
+        <input type="text" id="f-productName" value="${esc(state.productName)}" placeholder="${t('gen.productName.placeholder')}">
       </div>
 
       <div class="form-group">
-        <label>Kernversprechen</label>
-        <input type="text" id="f-corePromise" value="${esc(state.corePromise)}" placeholder="Was ist das eine Ergebnis, das die Zielgruppe erreicht?">
+        <label>${t('gen.corePromise')}</label>
+        <input type="text" id="f-corePromise" value="${esc(state.corePromise)}" placeholder="${t('gen.corePromise.placeholder')}">
       </div>
 
       <div class="form-group">
-        <label>Unique Mechanism</label>
-        <input type="text" id="f-uniqueMechanism" value="${esc(state.uniqueMechanism)}" placeholder="Was macht dieses Produkt anders? (Leer lassen = Kreis schlägt vor)">
+        <label>${t('gen.uniqueMechanism')}</label>
+        <input type="text" id="f-uniqueMechanism" value="${esc(state.uniqueMechanism)}" placeholder="${t('gen.uniqueMechanism.placeholder')}">
       </div>
 
       <div class="form-row">
         <div>
-          <label>Awareness-Level</label>
+          <label>${t('gen.awareness')}</label>
           <select id="f-awareness">
-            ${AWARENESS_LEVELS.map(a => `<option ${state.awareness === a ? 'selected' : ''}>${a}</option>`).join('')}
+            ${getAwarenessLevels().map(a => `<option ${state.awareness === a ? 'selected' : ''}>${a}</option>`).join('')}
           </select>
         </div>
         <div>
-          <label>Tonalität</label>
+          <label>${t('gen.tonality')}</label>
           <select id="f-tonality">
-            ${TONALITIES.map(t => `<option ${state.tonality === t ? 'selected' : ''}>${t}</option>`).join('')}
+            ${getTonalities().map(tn => `<option ${state.tonality === tn ? 'selected' : ''}>${tn}</option>`).join('')}
           </select>
         </div>
       </div>
 
       <div class="form-group">
-        <label>Zusätzlicher Kontext <span style="font-weight:400;text-transform:none">(optional)</span></label>
-        <textarea id="f-additionalContext" rows="3" placeholder="Besondere Anforderungen, Zielgruppen-Details, vorherige Testergebnisse...">${esc(state.additionalContext)}</textarea>
+        <label>${t('gen.context')} <span style="font-weight:400;text-transform:none">${t('gen.context.optional')}</span></label>
+        <textarea id="f-additionalContext" rows="3" placeholder="${t('gen.context.placeholder')}">${esc(state.additionalContext)}</textarea>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="card-icon">🧠</span> Denker-Panel <span style="font-size:11px;color:var(--text-dim);font-weight:400;margin-left:8px">${state.selectedThinkers.length} ausgewählt</span></div>
+      <div class="card-header"><span class="card-icon">🧠</span> ${t('gen.thinkerPanel')} <span style="font-size:11px;color:var(--text-dim);font-weight:400;margin-left:8px">${t('gen.thinkerPanel.selected', { count: state.selectedThinkers.length })}</span></div>
       <div class="thinker-grid">
-        ${THINKERS.map(t => `
-          <div class="thinker-chip ${t.required ? 'required' : (state.selectedThinkers.includes(t.id) ? 'selected' : '')}" data-thinker="${t.id}">
-            ${t.emoji} ${t.name}
-            <span class="chip-role">${t.role}</span>
+        ${THINKERS.map(tk => `
+          <div class="thinker-chip ${tk.required ? 'required' : (state.selectedThinkers.includes(tk.id) ? 'selected' : '')}" data-thinker="${tk.id}">
+            ${tk.emoji} ${tk.name}
+            <span class="chip-role">${tRole(tk)}</span>
           </div>
         `).join('')}
       </div>
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="card-icon">📐</span> Frameworks <span style="font-size:11px;color:var(--text-dim);font-weight:400;margin-left:8px">${state.selectedFrameworks.length} ausgewählt</span></div>
+      <div class="card-header"><span class="card-icon">📐</span> ${t('gen.frameworks')} <span style="font-size:11px;color:var(--text-dim);font-weight:400;margin-left:8px">${t('gen.frameworks.selected', { count: state.selectedFrameworks.length })}</span></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         ${FRAMEWORKS.map(f => `
           <div class="framework-chip ${state.selectedFrameworks.includes(f.id) ? 'selected' : ''}" data-framework="${f.id}">
             <div>
               <div style="font-weight:600">${f.name}</div>
-              <div style="font-size:10px;color:var(--text-dim);margin-top:2px">${f.use}</div>
+              <div style="font-size:10px;color:var(--text-dim);margin-top:2px">${fUse(f)}</div>
             </div>
             <div class="framework-stars">${'★'.repeat(f.score)}${'☆'.repeat(5 - f.score)}</div>
           </div>
@@ -1389,7 +1639,7 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
 
     <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px">
       <button class="btn btn-primary" id="btn-generate" ${state.isGenerating ? 'disabled' : ''}>
-        🌠 Kreis einberufen & generieren
+        ${t('gen.button')}
       </button>
     </div>
   `;
@@ -1399,13 +1649,13 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
       if (state.isGenerating && !state.currentOutput) {
         return `
       <div class="page-header">
-        <div class="page-title">Skript wird generiert...</div>
+        <div class="page-title">${t('out.generating')}</div>
       </div>
       <div class="output-container">
         <div class="generating">
           <div class="spinner"></div>
           <div class="generating-phase">${state.generatingPhase}</div>
-          <div class="generating-text">Der Kreis der Exzellenz debattiert über Ihr Skript.</div>
+          <div class="generating-text">${t('out.debateInfo')}</div>
         </div>
       </div>
     `;
@@ -1414,8 +1664,8 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
       if (!state.currentOutput) {
         return `
       <div class="page-header">
-        <div class="page-title">Aktuelles Skript</div>
-        <div class="page-subtitle">Noch kein Skript generiert. Starten Sie auf der Generieren-Seite.</div>
+        <div class="page-title">${t('out.title')}</div>
+        <div class="page-subtitle">${t('out.noScript')}</div>
       </div>
     `;
       }
@@ -1424,16 +1674,16 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
 
       return `
     <div class="page-header">
-      <div class="page-title">Aktuelles Skript ${state.isGenerating ? '<span style="color:var(--accent);font-size:14px">● Live</span>' : ''}</div>
+      <div class="page-title">${t('out.title')} ${state.isGenerating ? `<span style="color:var(--accent);font-size:14px">${t('out.live')}</span>` : ''}</div>
     </div>
     <div class="output-container">
       <div class="output-header">
         <div class="output-tabs">
-          <button class="output-tab ${state.outputTab === 'script' ? 'active' : ''}" data-tab="script">Skript</button>
-          <button class="output-tab ${state.outputTab === 'raw' ? 'active' : ''}" data-tab="raw">Markdown</button>
+          <button class="output-tab ${state.outputTab === 'script' ? 'active' : ''}" data-tab="script">${t('out.tab.script')}</button>
+          <button class="output-tab ${state.outputTab === 'raw' ? 'active' : ''}" data-tab="raw">${t('out.tab.markdown')}</button>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="btn btn-secondary btn-sm" id="btn-copy">📋 Kopieren</button>
+          <button class="btn btn-secondary btn-sm" id="btn-copy">${t('out.copy')}</button>
         </div>
       </div>
       <div class="output-body ${state.isGenerating ? 'streaming-cursor' : ''}">
@@ -1465,30 +1715,31 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
     }
 
     function renderArchivePage() {
+      const dateLoc = getLocale() === 'en' ? 'en-US' : 'de-DE';
       return `
     <div class="page-header">
-      <div class="page-title">Skript-Archiv</div>
-      <div class="page-subtitle">${state.archive.length} Skripte gespeichert</div>
+      <div class="page-title">${t('archive.title')}</div>
+      <div class="page-subtitle">${t('archive.subtitle', { count: state.archive.length })}</div>
     </div>
 
     ${state.selectedArchiveItem ? `
       <div style="margin-bottom:16px">
-        <button class="btn btn-secondary btn-sm" id="btn-back-archive">← Zurück zur Liste</button>
+        <button class="btn btn-secondary btn-sm" id="btn-back-archive">${t('archive.back')}</button>
       </div>
       <div class="output-container">
         <div class="output-header">
           <div style="font-weight:600;font-size:14px">${esc(state.selectedArchiveItem.title)}</div>
-          <button class="btn btn-secondary btn-sm" id="btn-copy-archive">📋 Kopieren</button>
+          <button class="btn btn-secondary btn-sm" id="btn-copy-archive">${t('out.copy')}</button>
         </div>
         <div class="output-body">${formatScriptOutput(state.selectedArchiveItem.content)}</div>
       </div>
     ` : `
-      ${state.archive.length === 0 ? '<div style="color:var(--text-dim);padding:40px;text-align:center">Noch keine Skripte generiert.</div>' : ''}
+      ${state.archive.length === 0 ? `<div style="color:var(--text-dim);padding:40px;text-align:center">${t('archive.empty')}</div>` : ''}
       ${state.archive.map(item => `
         <div class="archive-item" data-archive="${item.id}">
           <div>
             <div class="archive-title">${esc(item.title)}</div>
-            <div class="archive-meta">${new Date(item.date).toLocaleDateString('de-DE')} · ${item.product} · ${item.language} · ${item.duration}</div>
+            <div class="archive-meta">${new Date(item.date).toLocaleDateString(dateLoc)} · ${item.product} · ${item.language} · ${item.duration}</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
             <button class="btn btn-secondary btn-sm btn-delete-archive" data-delete="${item.id}">🗑</button>
@@ -1502,37 +1753,24 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
     function renderThinkersPage() {
       return `
     <div class="page-header">
-      <div class="page-title">Denker-Panel</div>
-      <div class="page-subtitle">${THINKERS.length} Denker verfügbar · Scientist Whisperer ist immer dabei</div>
+      <div class="page-title">${t('thinkers.title')}</div>
+      <div class="page-subtitle">${t('thinkers.subtitle', { count: THINKERS.length })}</div>
     </div>
 
-    ${THINKERS.map(t => `
+    ${THINKERS.map(tk => `
       <div class="card" style="display:flex;gap:16px;align-items:flex-start">
-        <div style="font-size:32px;line-height:1">${t.emoji}</div>
+        <div style="font-size:32px;line-height:1">${tk.emoji}</div>
         <div style="flex:1">
-          <div style="font-size:16px;font-weight:600;color:var(--text-bright);margin-bottom:2px">${t.name}</div>
-          <div style="font-size:12px;color:var(--accent);margin-bottom:8px">${t.role}</div>
+          <div style="font-size:16px;font-weight:600;color:var(--text-bright);margin-bottom:2px">${tk.name}</div>
+          <div style="font-size:12px;color:var(--accent);margin-bottom:8px">${tRole(tk)}</div>
           <div style="font-size:13px;color:var(--text-dim)">
-            ${t.required ? 'Pflicht-Mitglied mit Veto-Recht. Wird bei jedem Skript automatisch einbezogen.' :
-          `Wähle diesen Denker, wenn du ${t.role === 'Awareness-Stratege' ? 'die richtige Awareness-Stufe bestimmen musst' :
-            t.role === 'Offer-Architekt' ? 'den Offer optimieren und den wahrgenommenen Wert maximieren willst' :
-              t.role === 'Story-Architekt' ? 'eine narrative Brücke und emotionale Verbindung brauchst' :
-                t.role === 'Qualitätswächter' ? 'sicherstellen willst, dass jedes Wort auf Fakten basiert' :
-                  t.role === 'Mechanism-Ingenieur' ? 'erklären musst, WARUM dein Ansatz funktioniert' :
-                    t.role === 'Intensifier' ? 'die emotionale Wirkung des Problems verstärken willst' :
-                      t.role === 'Aufmerksamkeits-Ingenieur' ? 'einen unvergesslichen Hook brauchst' :
-                        t.role === 'Trust-Architekt' ? 'Vertrauen aufbauen willst, bevor du verkaufst' :
-                          t.role === 'Research-Master' ? 'modulare, testbare Copy-Elemente brauchst' :
-                            t.role === 'Visual Storytellers' ? 'visuelle Demo-Konzepte für Video brauchst' :
-                              t.role === 'ROI-Wächter' ? 'messbare Ergebnisse und harte CTAs brauchst' :
-                                'Neugier und Open Loops erzeugen willst'}.`
-        }
+            ${tk.required ? t('thinkers.requiredDesc') : getThinkerDesc(tk.role.de)}
           </div>
         </div>
         <div>
-          ${t.required ?
-          '<span style="font-size:11px;color:var(--scientist);background:var(--scientist-dim);padding:4px 10px;border-radius:12px">PFLICHT</span>' :
-          `<span style="font-size:11px;color:${state.selectedThinkers.includes(t.id) ? 'var(--green)' : 'var(--text-dim)'};background:${state.selectedThinkers.includes(t.id) ? 'var(--green-dim)' : 'var(--bg)'};padding:4px 10px;border-radius:12px">${state.selectedThinkers.includes(t.id) ? '✓ Aktiv' : 'Inaktiv'}</span>`
+          ${tk.required ?
+          `<span style="font-size:11px;color:var(--scientist);background:var(--scientist-dim);padding:4px 10px;border-radius:12px">${t('thinkers.required')}</span>` :
+          `<span style="font-size:11px;color:${state.selectedThinkers.includes(tk.id) ? 'var(--green)' : 'var(--text-dim)'};background:${state.selectedThinkers.includes(tk.id) ? 'var(--green-dim)' : 'var(--bg)'};padding:4px 10px;border-radius:12px">${state.selectedThinkers.includes(tk.id) ? t('thinkers.active') : t('thinkers.inactive')}</span>`
         }
         </div>
       </div>
@@ -1543,64 +1781,64 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
     function renderSettingsPage() {
       return `
     <div class="page-header">
-      <div class="page-title">Einstellungen</div>
-      <div class="page-subtitle">Server-Verbindung und Modell-Konfiguration</div>
+      <div class="page-title">${t('settings.title')}</div>
+      <div class="page-subtitle">${t('settings.subtitle')}</div>
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="card-icon">🔗</span> Server-Status</div>
+      <div class="card-header"><span class="card-icon">🔗</span> ${t('settings.serverStatus')}</div>
 
       <div class="setting-row" style="border-bottom:none">
         <div>
           <div class="setting-label" style="display:flex;align-items:center;gap:8px">
             <span class="api-dot ${state.apiConnected ? 'connected' : 'disconnected'}"></span>
-            ${state.apiConnected ? 'Server verbunden – Anthropic API aktiv' : 'Server nicht erreichbar'}
+            ${state.apiConnected ? t('settings.connected') : t('settings.disconnected')}
           </div>
           <div class="setting-desc">
             ${state.apiConnected
-          ? 'Der API-Key wird sicher auf dem Server in der .env-Datei gespeichert.'
-          : 'Starte den Server mit <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">node server.js</code> im Projektordner.'}
+          ? t('settings.connectedDesc')
+          : `${t('settings.disconnectedDesc')} <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">node server.js</code> ${t('settings.disconnectedDesc2')}`}
           </div>
         </div>
-        <button class="btn btn-secondary btn-sm" id="btn-check-connection">Verbindung prüfen</button>
+        <button class="btn btn-secondary btn-sm" id="btn-check-connection">${t('settings.checkConnection')}</button>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="card-icon">🤖</span> Modell</div>
+      <div class="card-header"><span class="card-icon">🤖</span> ${t('settings.model')}</div>
 
       <div class="form-group">
-        <label>Claude-Modell auswählen</label>
+        <label>${t('settings.modelSelect')}</label>
         <select id="s-model">
-          <option value="claude-opus-4-6" ${state.model === 'claude-opus-4-6' ? 'selected' : ''}>Claude Opus 4.6 – Höchste Qualität, langsamer</option>
-          <option value="claude-sonnet-4-6" ${state.model === 'claude-sonnet-4-6' ? 'selected' : ''}>Claude Sonnet 4.6 – Schnell und sehr gut (empfohlen)</option>
+          <option value="claude-opus-4-6" ${state.model === 'claude-opus-4-6' ? 'selected' : ''}>${t('settings.opusDesc')}</option>
+          <option value="claude-sonnet-4-6" ${state.model === 'claude-sonnet-4-6' ? 'selected' : ''}>${t('settings.sonnetDesc')}</option>
         </select>
         <div style="font-size:11px;color:var(--text-dim);margin-top:6px">
-          <strong>Opus 4.6</strong> liefert die tiefsten Debatten und kreativsten Skripte. Ideal für wichtige Kampagnen.<br>
-          <strong>Sonnet 4.6</strong> ist schneller und günstiger – perfekt für A/B-Test-Varianten und Iterationen.
+          <strong>Opus 4.6</strong> ${t('settings.opusInfo')}<br>
+          <strong>Sonnet 4.6</strong> ${t('settings.sonnetInfo')}
         </div>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="card-icon">💾</span> Daten</div>
+      <div class="card-header"><span class="card-icon">💾</span> ${t('settings.data')}</div>
       <div class="setting-row">
         <div>
-          <div class="setting-label">Archiv leeren</div>
-          <div class="setting-desc">${state.archive.length} Skripte gespeichert (im Browser)</div>
+          <div class="setting-label">${t('settings.clearArchive')}</div>
+          <div class="setting-desc">${t('settings.archiveCount', { count: state.archive.length })}</div>
         </div>
-        <button class="btn btn-secondary btn-sm" id="btn-clear-archive">Archiv leeren</button>
+        <button class="btn btn-secondary btn-sm" id="btn-clear-archive">${t('settings.clearArchive')}</button>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-header"><span class="card-icon">📖</span> Setup-Anleitung</div>
+      <div class="card-header"><span class="card-icon">📖</span> ${t('settings.setup')}</div>
       <div style="font-size:13px;line-height:1.8;color:var(--text-dim)">
-        <strong style="color:var(--text)">1.</strong> Erstelle einen API-Key auf <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent)">console.anthropic.com</a><br>
-        <strong style="color:var(--text)">2.</strong> Öffne die Datei <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">.env</code> im Projektordner<br>
-        <strong style="color:var(--text)">3.</strong> Ersetze <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">sk-ant-DEIN-KEY-HIER</code> durch deinen echten Key<br>
-        <strong style="color:var(--text)">4.</strong> Starte den Server: <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">node server.js</code><br>
-        <strong style="color:var(--text)">5.</strong> Öffne <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">http://localhost:3333</code> im Browser
+        <strong style="color:var(--text)">1.</strong> ${t('settings.step1')} <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent)">console.anthropic.com</a><br>
+        <strong style="color:var(--text)">2.</strong> ${t('settings.step2')} <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">.env</code> ${t('settings.step2b')}<br>
+        <strong style="color:var(--text)">3.</strong> ${t('settings.step3')} <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">sk-ant-DEIN-KEY-HIER</code> ${t('settings.step3b')}<br>
+        <strong style="color:var(--text)">4.</strong> ${t('settings.step4')} <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">node server.js</code><br>
+        <strong style="color:var(--text)">5.</strong> ${t('settings.step5')} <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:monospace">http://localhost:3333</code> ${t('settings.step5b')}
       </div>
     </div>
   `;
@@ -1669,13 +1907,13 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
       const btnCopy = document.getElementById('btn-copy');
       if (btnCopy) btnCopy.addEventListener('click', () => {
         navigator.clipboard.writeText(state.currentOutput);
-        showToast('In Zwischenablage kopiert');
+        showToast(t('toast.copied'));
       });
 
       const btnCopyArchive = document.getElementById('btn-copy-archive');
       if (btnCopyArchive) btnCopyArchive.addEventListener('click', () => {
         navigator.clipboard.writeText(state.selectedArchiveItem.content);
-        showToast('In Zwischenablage kopiert');
+        showToast(t('toast.copied'));
       });
 
       // Archive
@@ -1694,7 +1932,7 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
           state.archive = state.archive.filter(x => x.id !== id);
           localStorage.setItem('kde_archive', JSON.stringify(state.archive));
           render();
-          showToast('Skript gelöscht');
+          showToast(t('toast.deleted'));
         });
       });
 
@@ -1706,7 +1944,7 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
       if (sModel) sModel.addEventListener('change', () => {
         localStorage.setItem('kde_model', sModel.value);
         setState({ model: sModel.value });
-        showToast(`Modell: ${sModel.value}`);
+        showToast(`${t('settings.model')}: ${sModel.value}`);
       });
 
       // Settings – Check connection
@@ -1716,12 +1954,18 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
       // Settings – Clear archive
       const btnClearArchive = document.getElementById('btn-clear-archive');
       if (btnClearArchive) btnClearArchive.addEventListener('click', () => {
-        if (confirm('Alle archivierten Skripte löschen?')) {
+        if (confirm(t('confirm.clearArchive'))) {
           state.archive = [];
           localStorage.setItem('kde_archive', '[]');
           render();
-          showToast('Archiv geleert');
+          showToast(t('toast.archiveCleared'));
         }
+      });
+
+      // Language toggle
+      const btnLangToggle = document.getElementById('btn-lang-toggle');
+      if (btnLangToggle) btnLangToggle.addEventListener('click', () => {
+        setLocale(getLocale() === 'de' ? 'en' : 'de');
       });
     }
 
@@ -1739,7 +1983,7 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
         if (res.ok) {
           const data = await res.json();
           setState({ apiConnected: true });
-          showToast('Server verbunden – ' + data.provider);
+          showToast(t('toast.serverConnected') + data.provider);
         } else {
           setState({ apiConnected: false });
         }
@@ -1749,7 +1993,7 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
     }
 
     // ============================================================
-    // PASSWORD PROTECTION
+    // PASSWORD PROTECTION & LOGIN i18n
     // ============================================================
     const PASSWORD_HASH = '69ecaa44d7cc98f1ffccc5b2632a4225180993b717d8f1e71a811437d2fafc73';
 
@@ -1760,13 +2004,33 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
+    function updateLoginI18n() {
+      const sub = document.getElementById('login-subtitle');
+      const pwd = document.getElementById('login-password');
+      const btn = document.getElementById('login-btn');
+      const langBtn = document.getElementById('login-lang-toggle');
+      if (sub) sub.textContent = t('login.subtitle');
+      if (pwd) pwd.placeholder = t('login.placeholder');
+      if (btn) btn.textContent = t('login.button');
+      if (langBtn) langBtn.textContent = getLocale() === 'de' ? t('lang.switch_to_en') : t('lang.switch_to_de');
+    }
+
     function initApp() {
       document.getElementById('login-overlay').style.display = 'none';
       document.getElementById('app').style.display = '';
+      document.documentElement.lang = getLocale();
       render();
       checkServerConnection();
       setInterval(checkServerConnection, 30000);
     }
+
+    // Initialize login i18n
+    updateLoginI18n();
+
+    // Login-page language toggle
+    document.getElementById('login-lang-toggle').addEventListener('click', () => {
+      setLocale(getLocale() === 'de' ? 'en' : 'de');
+    });
 
     // Check if already authenticated in this session
     if (sessionStorage.getItem('kde_auth') === 'true') {
@@ -1788,7 +2052,7 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
         setTimeout(initApp, 300);
       } else {
         input.classList.add('error');
-        errorEl.textContent = 'Falsches Passwort. Bitte erneut versuchen.';
+        errorEl.textContent = t('login.error');
         setTimeout(() => input.classList.remove('error'), 500);
         input.value = '';
         input.focus();
