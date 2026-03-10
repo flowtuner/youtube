@@ -1053,6 +1053,28 @@
       'thinkers.active': { de: '✓ Aktiv', en: '✓ Active' },
       'thinkers.inactive': { de: 'Inaktiv', en: 'Inactive' },
       'thinkers.requiredDesc': { de: 'Pflicht-Mitglied mit Veto-Recht. Wird bei jedem Skript automatisch einbezogen.', en: 'Required member with veto power. Automatically included in every script.' },
+      'thinkers.addNew': { de: 'Denker hinzufügen', en: 'Add thinker' },
+      'thinkers.remove': { de: 'Entfernen', en: 'Remove' },
+      'thinkers.restoreDefaults': { de: 'Entfernte wiederherstellen', en: 'Restore removed' },
+      'thinkers.confirmRemove': { de: '{{name}} wirklich entfernen?', en: 'Really remove {{name}}?' },
+      'thinkers.removed': { de: '{{name}} entfernt', en: '{{name}} removed' },
+      'thinkers.defaultsRestored': { de: 'Standard-Denker wiederhergestellt', en: 'Default thinkers restored' },
+      'thinkers.form.name': { de: 'Name', en: 'Name' },
+      'thinkers.form.namePlaceholder': { de: 'z.B. Seth Godin, Robert Cialdini...', en: 'e.g. Seth Godin, Robert Cialdini...' },
+      'thinkers.form.emoji': { de: 'Emoji', en: 'Emoji' },
+      'thinkers.form.roleDe': { de: 'Rolle (DE)', en: 'Role (DE)' },
+      'thinkers.form.roleEn': { de: 'Rolle (EN)', en: 'Role (EN)' },
+      'thinkers.form.rolePlaceholder': { de: 'z.B. Persuasion-Experte', en: 'e.g. Persuasion Expert' },
+      'thinkers.form.rolePlaceholderEn': { de: 'z.B. Persuasion Expert', en: 'e.g. Persuasion Expert' },
+      'thinkers.form.descDe': { de: 'Beschreibung (DE)', en: 'Description (DE)' },
+      'thinkers.form.descEn': { de: 'Beschreibung (EN)', en: 'Description (EN)' },
+      'thinkers.form.descPlaceholder': { de: 'Kern-Philosophie, Signatur-Techniken, was dieser Denker in den Kreis einbringt... (3-4 Zeilen)', en: 'Core philosophy, signature techniques, what this thinker brings to the circle... (3-4 lines)' },
+      'thinkers.form.descPlaceholderEn': { de: 'Englische Beschreibung (optional, sonst wird DE verwendet)', en: 'English description (optional, DE will be used otherwise)' },
+      'thinkers.form.cancel': { de: 'Abbrechen', en: 'Cancel' },
+      'thinkers.form.save': { de: 'Speichern', en: 'Save' },
+      'thinkers.form.error': { de: 'Name und Rolle (DE) sind Pflichtfelder', en: 'Name and role (DE) are required' },
+      'thinkers.form.exists': { de: 'Ein Denker mit diesem Namen existiert bereits', en: 'A thinker with this name already exists' },
+      'thinkers.form.saved': { de: '{{name}} zum Kreis hinzugefügt', en: '{{name}} added to the circle' },
 
       // --- Settings Page ---
       'settings.title': { de: 'Einstellungen', en: 'Settings' },
@@ -1142,21 +1164,54 @@
     // DATA CONSTANTS (bilingual via t())
     // ============================================================
 
-    const THINKERS = [
-      { id: 'scientist_whisperer', name: 'Scientist Whisperer', role: { de: 'Zielgruppen-Wächter', en: 'Audience Guardian' }, required: true, emoji: '🔬' },
-      { id: 'eugene_schwartz', name: 'Eugene Schwartz', role: { de: 'Awareness-Stratege', en: 'Awareness Strategist' }, required: false, emoji: '🎯' },
-      { id: 'alex_hormozi', name: 'Alex Hormozi', role: { de: 'Offer-Architekt', en: 'Offer Architect' }, required: false, emoji: '💰' },
-      { id: 'russell_brunson', name: 'Russell Brunson', role: { de: 'Story-Architekt', en: 'Story Architect' }, required: false, emoji: '📖' },
-      { id: 'david_ogilvy', name: 'David Ogilvy', role: { de: 'Qualitätswächter', en: 'Quality Guardian' }, required: false, emoji: '🎩' },
-      { id: 'todd_brown', name: 'Todd Brown', role: { de: 'Mechanism-Ingenieur', en: 'Mechanism Engineer' }, required: false, emoji: '⚙️' },
-      { id: 'sabri_suby', name: 'Sabri Suby', role: { de: 'Intensifier', en: 'Intensifier' }, required: false, emoji: '🔥' },
-      { id: 'billy_gene', name: 'Billy Gene Shaw', role: { de: 'Aufmerksamkeits-Ingenieur', en: 'Attention Engineer' }, required: false, emoji: '⚡' },
-      { id: 'frank_kern', name: 'Frank Kern', role: { de: 'Trust-Architekt', en: 'Trust Architect' }, required: false, emoji: '🤝' },
-      { id: 'stefan_georgi', name: 'Stefan Georgi', role: { de: 'Research-Master', en: 'Research Master' }, required: false, emoji: '🔍' },
-      { id: 'harmon_brothers', name: 'Harmon Brothers', role: { de: 'Visual Storytellers', en: 'Visual Storytellers' }, required: false, emoji: '🎬' },
-      { id: 'dan_kennedy', name: 'Dan Kennedy', role: { de: 'ROI-Wächter', en: 'ROI Guardian' }, required: false, emoji: '📊' },
-      { id: 'gary_halbert', name: 'Gary Halbert', role: { de: 'Curiosity-Meister', en: 'Curiosity Master' }, required: false, emoji: '🪝' },
+    const DEFAULT_THINKERS = [
+      { id: 'scientist_whisperer', name: 'Scientist Whisperer', role: { de: 'Zielgruppen-Wächter', en: 'Audience Guardian' }, required: true, emoji: '🔬', custom: false, description: { de: 'Das Gewissen des Kreises. Prüft jedes Element auf wissenschaftliche Glaubwürdigkeit und legt Veto ein gegen Hype, Buzzwords und manipulative Taktiken. Kennt die Psychologie der wissenschaftlichen Skepsis – und respektiert sie.', en: 'The conscience of the circle. Reviews every element for scientific credibility and vetoes hype, buzzwords, and manipulative tactics. Understands the psychology of scientific skepticism – and respects it.' } },
+      { id: 'eugene_schwartz', name: 'Eugene Schwartz', role: { de: 'Awareness-Stratege', en: 'Awareness Strategist' }, required: false, emoji: '🎯', custom: false, description: { de: 'Bestimmt, auf welcher Bewusstseinsstufe die Zielgruppe steht – von ahnungslos bis kaufbereit. Seine 5 Awareness-Stufen und 5 Sophistication-Level entscheiden, ob das Skript informiert, überzeugt oder direkt verkauft.', en: 'Determines where the target audience stands on the awareness spectrum – from unaware to ready to buy. His 5 awareness stages and 5 sophistication levels decide whether the script informs, persuades, or sells directly.' } },
+      { id: 'alex_hormozi', name: 'Alex Hormozi', role: { de: 'Offer-Architekt', en: 'Offer Architect' }, required: false, emoji: '💰', custom: false, description: { de: 'Optimiert den Offer mit seiner Value Equation: Traumergebnis × Wahrscheinlichkeit, geteilt durch Zeitverzögerung × Aufwand. Jeder Faktor wird einzeln geschärft, bis das Angebot so gut ist, dass man sich dumm fühlt, Nein zu sagen.', en: 'Optimizes the offer with his Value Equation: dream outcome × likelihood, divided by time delay × effort. Each factor is sharpened individually until the offer is so good, you feel dumb saying no.' } },
+      { id: 'russell_brunson', name: 'Russell Brunson', role: { de: 'Story-Architekt', en: 'Story Architect' }, required: false, emoji: '📖', custom: false, description: { de: 'Baut die narrative Brücke zwischen Problem und Lösung. Seine Epiphany Bridge lässt den Zuschauer denselben Aha-Moment erleben wie der Gründer. Positioniert Produkte als "New Opportunity" statt als Verbesserung.', en: 'Builds the narrative bridge between problem and solution. His Epiphany Bridge lets the viewer experience the same aha-moment as the founder. Positions products as "New Opportunity" instead of improvement.' } },
+      { id: 'david_ogilvy', name: 'David Ogilvy', role: { de: 'Qualitätswächter', en: 'Quality Guardian' }, required: false, emoji: '🎩', custom: false, description: { de: 'Facts-first, Research-based, Anti-Hype. Ogilvy besteht darauf, dass jede Behauptung belegbar ist, jede Headline getestet, jedes Wort arbeitet. Sein Credo: "The consumer is not a moron. She is your wife."', en: 'Facts-first, research-based, anti-hype. Ogilvy insists every claim is provable, every headline tested, every word works. His credo: "The consumer is not a moron. She is your wife."' } },
+      { id: 'todd_brown', name: 'Todd Brown', role: { de: 'Mechanism-Ingenieur', en: 'Mechanism Engineer' }, required: false, emoji: '⚙️', custom: false, description: { de: 'Entwickelt den Unique Mechanism – die Erklärung, WARUM bisherige Ansätze scheitern und WIE der neue funktioniert. Gibt dem Prozess einen Namen und verwandelt eine Produktfeature-Liste in ein überzeugendes "Educate-to-Sell"-Narrativ.', en: 'Develops the Unique Mechanism – explaining WHY previous approaches failed and HOW the new one works. Names the process and transforms a product feature list into a compelling "educate-to-sell" narrative.' } },
+      { id: 'sabri_suby', name: 'Sabri Suby', role: { de: 'Intensifier', en: 'Intensifier' }, required: false, emoji: '🔥', custom: false, description: { de: 'Dreht die Intensität hoch. Seine "PAS on Steroids"-Methode artikuliert Probleme so präzise, dass die Zielgruppe denkt: "Die reden über MICH." Muss vom Scientist Whisperer gefiltert werden – ungefiltert zu aggressiv.', en: 'Turns up the intensity. His "PAS on Steroids" method articulates problems so precisely the audience thinks: "They\'re talking about ME." Must be filtered by the Scientist Whisperer – too aggressive unfiltered.' } },
+      { id: 'billy_gene', name: 'Billy Gene Shaw', role: { de: 'Aufmerksamkeits-Ingenieur', en: 'Attention Engineer' }, required: false, emoji: '⚡', custom: false, description: { de: 'Der Pattern-Interrupt-Spezialist. Seine Hooks sind unvorhersehbar, visuell stark und erzwingen Aufmerksamkeit in den ersten 2 Sekunden. Bringt Entertainment-Elemente ein, die auch bei seriösen Zielgruppen funktionieren.', en: 'The pattern interrupt specialist. His hooks are unpredictable, visually strong, and force attention in the first 2 seconds. Brings entertainment elements that work even with serious audiences.' } },
+      { id: 'frank_kern', name: 'Frank Kern', role: { de: 'Trust-Architekt', en: 'Trust Architect' }, required: false, emoji: '🤝', custom: false, description: { de: 'Baut Vertrauen auf, bevor er verkauft. Sein "Results in Advance"-Prinzip gibt der Zielgruppe bereits in der Ad einen echten Mehrwert. Friendly Marketing statt Druck – perfekt für skeptische Scientists, die Manipulation sofort erkennen.', en: 'Builds trust before selling. His "Results in Advance" principle gives the audience real value already in the ad. Friendly marketing instead of pressure – perfect for skeptical scientists who spot manipulation instantly.' } },
+      { id: 'stefan_georgi', name: 'Stefan Georgi', role: { de: 'Research-Master', en: 'Research Master' }, required: false, emoji: '🔍', custom: false, description: { de: 'Seine RMBC-Methode (Research-Mechanism-Brief-Copy) beginnt mit 80% Recherche, bevor ein Wort geschrieben wird. Baut modulare Copy-Blöcke, die einzeln getestet und ausgetauscht werden können – ideal für systematisches A/B-Testing.', en: 'His RMBC method (Research-Mechanism-Brief-Copy) starts with 80% research before writing a single word. Builds modular copy blocks that can be tested and swapped individually – ideal for systematic A/B testing.' } },
+      { id: 'harmon_brothers', name: 'Harmon Brothers', role: { de: 'Visual Storytellers', en: 'Visual Storytellers' }, required: false, emoji: '🎬', custom: false, description: { de: 'Die Meister der visuellen Demo. Zeigen statt behaupten – durch Side-by-Side-Vergleiche, überraschende Demonstrationen und Storytelling, das gleichzeitig unterhält und verkauft. Vereinen Brand-Building mit Direct Response.', en: 'The masters of visual demonstration. Show don\'t tell – through side-by-side comparisons, surprising demonstrations, and storytelling that entertains and sells simultaneously. Unite brand-building with direct response.' } },
+      { id: 'dan_kennedy', name: 'Dan Kennedy', role: { de: 'ROI-Wächter', en: 'ROI Guardian' }, required: false, emoji: '📊', custom: false, description: { de: 'Der härteste Kritiker im Raum. Fragt bei jedem Element: "Was ist der ROI?" Seine CTAs sind glasklar, seine Deadline-Taktiken ethisch fundiert. Hält den Kreis davon ab, kreativ auf Kosten der Conversion zu werden.', en: 'The toughest critic in the room. Asks of every element: "What\'s the ROI?" His CTAs are crystal clear, his deadline tactics ethically grounded. Keeps the circle from getting creative at the expense of conversion.' } },
+      { id: 'gary_halbert', name: 'Gary Halbert', role: { de: 'Curiosity-Meister', en: 'Curiosity Master' }, required: false, emoji: '🪝', custom: false, description: { de: 'Erzeugt Neugier, die wie ein Juckreiz erst durch Handeln gelindert wird. Seine Open Loops und Curiosity Gaps halten Zuschauer im Video. Seine "Starving Crowd"-Analyse stellt sicher, dass die Zielgruppe das Produkt überhaupt braucht.', en: 'Creates curiosity that itches until relieved by action. His open loops and curiosity gaps keep viewers in the video. His "Starving Crowd" analysis ensures the target audience actually needs the product.' } },
     ];
+
+    // Persistierte Custom-Denker laden und mit Defaults mergen
+    function getThinkersList() {
+      const customThinkers = JSON.parse(localStorage.getItem('kde_custom_thinkers') || '[]');
+      const removedIds = JSON.parse(localStorage.getItem('kde_removed_thinkers') || '[]');
+      const defaults = DEFAULT_THINKERS.filter(t => !removedIds.includes(t.id));
+      return [...defaults, ...customThinkers];
+    }
+
+    function saveCustomThinker(thinker) {
+      const customs = JSON.parse(localStorage.getItem('kde_custom_thinkers') || '[]');
+      customs.push(thinker);
+      localStorage.setItem('kde_custom_thinkers', JSON.stringify(customs));
+    }
+
+    function removeThinker(id) {
+      // Custom Denker: aus der Liste entfernen
+      const customs = JSON.parse(localStorage.getItem('kde_custom_thinkers') || '[]');
+      const isCustom = customs.some(t => t.id === id);
+      if (isCustom) {
+        localStorage.setItem('kde_custom_thinkers', JSON.stringify(customs.filter(t => t.id !== id)));
+      } else {
+        // Default Denker: auf die Removed-Liste setzen
+        const removed = JSON.parse(localStorage.getItem('kde_removed_thinkers') || '[]');
+        if (!removed.includes(id)) { removed.push(id); localStorage.setItem('kde_removed_thinkers', JSON.stringify(removed)); }
+      }
+      // Aus selectedThinkers entfernen
+      state.selectedThinkers = state.selectedThinkers.filter(tid => tid !== id);
+    }
+
+    function restoreDefaultThinkers() {
+      localStorage.removeItem('kde_removed_thinkers');
+    }
 
     function tRole(thinker) {
       return typeof thinker.role === 'object' ? (thinker.role[getLocale()] || thinker.role['de']) : thinker.role;
@@ -1245,6 +1300,8 @@
       selectedArchiveItem: null,
       // Toast
       toast: null,
+      // Thinker management
+      showAddThinkerForm: false,
     };
 
     function setState(patch) {
@@ -1263,9 +1320,10 @@
     // ============================================================
 
     function buildSystemPrompt() {
+      const allThinkers = getThinkersList();
       const thinkerNames = state.selectedThinkers.map(id => {
-        const th = THINKERS.find(x => x.id === id);
-        return th ? `${th.name} (${th.role.de})` : id;
+        const th = allThinkers.find(x => x.id === id);
+        return th ? `${th.name} (${typeof th.role === 'object' ? th.role.de : th.role})` : id;
       }).join(', ');
 
       const frameworkNames = state.selectedFrameworks.map(id => {
@@ -1287,19 +1345,11 @@ DEIN PROZESS:
 AUSGEWÄHLTE DENKER für dieses Skript: ${thinkerNames}
 
 DENKER-ROLLEN:
-- Scientist Whisperer (PFLICHT): Zielgruppen-Wächter mit Veto-Recht. Stellt sicher, dass jedes Element bei Scientists funktioniert. Kennt die Psychologie wissenschaftlicher Skepsis.
-- Eugene Schwartz: Bestimmt die richtige Awareness-Stufe und Sophistication-Level. 5 Stufen der Awareness, 5 Stufen der Sophistication.
-- Alex Hormozi: Optimiert den Offer mit seiner Value Equation (Traumergebnis × Wahrscheinlichkeit / Zeitverzögerung × Aufwand).
-- Russell Brunson: Baut die narrative Brücke. Hook-Story-Offer, Epiphany Bridge, New Opportunity.
-- David Ogilvy: Qualitätskontrolle. Facts-first, Research-based, Anti-Hype. "The consumer is not a moron."
-- Todd Brown: Entwickelt den Unique Mechanism. Erklärt WARUM bisherige Ansätze scheitern und WIE der neue funktioniert.
-- Sabri Suby: Intensiviert die Problem-Darstellung (gefiltert durch Scientist Whisperer). Dream Buyer Research.
-- Billy Gene Shaw: Pattern Interrupts, unerwartete Hooks, Entertainment-Elemente.
-- Frank Kern: Results in Advance, Trust-Building, Friendly Marketing.
-- Stefan Georgi: RMBC-Methode, modulare Copy-Architektur für A/B-Testing.
-- Harmon Brothers: Visuelle Storytelling-Konzepte, Demo-Mastery.
-- Dan Kennedy: ROI-Fokus, messbare CTAs, Accountability.
-- Gary Halbert: Curiosity Gaps, Open Loops, ethische Urgency.
+${allThinkers.filter(tk => state.selectedThinkers.includes(tk.id)).map(tk => {
+        const role = typeof tk.role === 'object' ? tk.role.de : tk.role;
+        const desc = typeof tk.description === 'object' ? tk.description.de : (tk.description || role);
+        return `- ${tk.name}${tk.required ? ' (PFLICHT)' : ''}: ${desc}`;
+      }).join('\n')}
 
 GEWÄHLTE FRAMEWORKS: ${frameworkNames}
 
@@ -1664,7 +1714,7 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
     <div class="card">
       <div class="card-header"><span class="card-icon">🧠</span> ${t('gen.thinkerPanel')} <span style="font-size:11px;color:var(--text-dim);font-weight:400;margin-left:8px">${t('gen.thinkerPanel.selected', { count: state.selectedThinkers.length })}</span></div>
       <div class="thinker-grid">
-        ${THINKERS.map(tk => `
+        ${getThinkersList().map(tk => `
           <div class="thinker-chip ${tk.required ? 'required' : (state.selectedThinkers.includes(tk.id) ? 'selected' : '')}" data-thinker="${tk.id}">
             ${tk.emoji} ${tk.name}
             <span class="chip-role">${tRole(tk)}</span>
@@ -1802,30 +1852,91 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
     }
 
     function renderThinkersPage() {
+      const thinkers = getThinkersList();
+      const removedDefaults = JSON.parse(localStorage.getItem('kde_removed_thinkers') || '[]');
+      const hasRemovedDefaults = removedDefaults.length > 0;
+
       return `
     <div class="page-header">
-      <div class="page-title">${t('thinkers.title')}</div>
-      <div class="page-subtitle">${t('thinkers.subtitle', { count: THINKERS.length })}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="page-title">${t('thinkers.title')}</div>
+          <div class="page-subtitle">${t('thinkers.subtitle', { count: thinkers.length })}</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          ${hasRemovedDefaults ? `<button class="btn btn-secondary btn-sm" id="btn-restore-defaults">${t('thinkers.restoreDefaults')}</button>` : ''}
+          <button class="btn btn-primary btn-sm" id="btn-add-thinker">+ ${t('thinkers.addNew')}</button>
+        </div>
+      </div>
     </div>
 
-    ${THINKERS.map(tk => `
+    ${state.showAddThinkerForm ? `
+    <div class="card" style="border-color:var(--accent)">
+      <div class="card-header"><span class="card-icon">✨</span> ${t('thinkers.addNew')}</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>${t('thinkers.form.name')}</label>
+          <input type="text" id="tf-name" placeholder="${t('thinkers.form.namePlaceholder')}">
+        </div>
+        <div class="form-group">
+          <label>${t('thinkers.form.emoji')}</label>
+          <input type="text" id="tf-emoji" placeholder="🧠" style="width:80px" maxlength="4">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>${t('thinkers.form.roleDe')}</label>
+          <input type="text" id="tf-role-de" placeholder="${t('thinkers.form.rolePlaceholder')}">
+        </div>
+        <div class="form-group">
+          <label>${t('thinkers.form.roleEn')}</label>
+          <input type="text" id="tf-role-en" placeholder="${t('thinkers.form.rolePlaceholderEn')}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>${t('thinkers.form.descDe')}</label>
+        <textarea id="tf-desc-de" rows="3" placeholder="${t('thinkers.form.descPlaceholder')}"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>${t('thinkers.form.descEn')}</label>
+        <textarea id="tf-desc-en" rows="3" placeholder="${t('thinkers.form.descPlaceholderEn')}"></textarea>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-secondary btn-sm" id="btn-cancel-thinker">${t('thinkers.form.cancel')}</button>
+        <button class="btn btn-primary btn-sm" id="btn-save-thinker">${t('thinkers.form.save')}</button>
+      </div>
+    </div>
+    ` : ''}
+
+    ${thinkers.map(tk => {
+      const desc = typeof tk.description === 'object' ? (tk.description[getLocale()] || tk.description.de) : (tk.description || '');
+      return `
       <div class="card" style="display:flex;gap:16px;align-items:flex-start">
         <div style="font-size:32px;line-height:1">${tk.emoji}</div>
         <div style="flex:1">
-          <div style="font-size:16px;font-weight:600;color:var(--text-bright);margin-bottom:2px">${tk.name}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+            <span style="font-size:16px;font-weight:600;color:var(--text-bright)">${tk.name}</span>
+            ${tk.custom ? '<span style="font-size:9px;background:var(--accent-dim);color:var(--accent);padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px">Custom</span>' : ''}
+          </div>
           <div style="font-size:12px;color:var(--accent);margin-bottom:8px">${tRole(tk)}</div>
-          <div style="font-size:13px;color:var(--text-dim)">
-            ${tk.required ? t('thinkers.requiredDesc') : getThinkerDesc(tk.role.de)}
+          <div style="font-size:13px;color:var(--text-dim);line-height:1.6">
+            ${desc}
           </div>
         </div>
-        <div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
           ${tk.required ?
           `<span style="font-size:11px;color:var(--scientist);background:var(--scientist-dim);padding:4px 10px;border-radius:12px">${t('thinkers.required')}</span>` :
           `<span style="font-size:11px;color:${state.selectedThinkers.includes(tk.id) ? 'var(--green)' : 'var(--text-dim)'};background:${state.selectedThinkers.includes(tk.id) ? 'var(--green-dim)' : 'var(--bg)'};padding:4px 10px;border-radius:12px">${state.selectedThinkers.includes(tk.id) ? t('thinkers.active') : t('thinkers.inactive')}</span>`
-        }
+          }
+          ${!tk.required ? `<button class="btn btn-secondary btn-sm btn-remove-thinker" data-remove-thinker="${tk.id}" style="font-size:10px;padding:3px 8px;color:var(--red);border-color:var(--red-dim)">✕ ${t('thinkers.remove')}</button>` : ''}
         </div>
       </div>
-    `).join('')}
+    `}).join('')}
   `;
     }
 
@@ -1905,17 +2016,90 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
         el.addEventListener('click', () => setState({ page: el.dataset.page }));
       });
 
-      // Thinker selection
+      // Thinker selection (on generate page chips)
       document.querySelectorAll('.thinker-chip[data-thinker]').forEach(el => {
         el.addEventListener('click', () => {
           const id = el.dataset.thinker;
-          const t = THINKERS.find(x => x.id === id);
-          if (t.required) return;
+          const tk = getThinkersList().find(x => x.id === id);
+          if (tk && tk.required) return;
           const sel = [...state.selectedThinkers];
           if (sel.includes(id)) sel.splice(sel.indexOf(id), 1);
           else sel.push(id);
           setState({ selectedThinkers: sel });
         });
+      });
+
+      // Thinker management – Add
+      const btnAddThinker = document.getElementById('btn-add-thinker');
+      if (btnAddThinker) btnAddThinker.addEventListener('click', () => {
+        setState({ showAddThinkerForm: true });
+      });
+
+      // Thinker management – Cancel
+      const btnCancelThinker = document.getElementById('btn-cancel-thinker');
+      if (btnCancelThinker) btnCancelThinker.addEventListener('click', () => {
+        setState({ showAddThinkerForm: false });
+      });
+
+      // Thinker management – Save
+      const btnSaveThinker = document.getElementById('btn-save-thinker');
+      if (btnSaveThinker) btnSaveThinker.addEventListener('click', () => {
+        const name = document.getElementById('tf-name')?.value?.trim();
+        const emoji = document.getElementById('tf-emoji')?.value?.trim() || '🧠';
+        const roleDe = document.getElementById('tf-role-de')?.value?.trim();
+        const roleEn = document.getElementById('tf-role-en')?.value?.trim();
+        const descDe = document.getElementById('tf-desc-de')?.value?.trim();
+        const descEn = document.getElementById('tf-desc-en')?.value?.trim();
+
+        if (!name || !roleDe) {
+          showToast(t('thinkers.form.error'));
+          return;
+        }
+
+        const id = 'custom_' + name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
+
+        // Prüfe ob ID schon existiert
+        if (getThinkersList().some(tk => tk.id === id)) {
+          showToast(t('thinkers.form.exists'));
+          return;
+        }
+
+        const newThinker = {
+          id,
+          name,
+          emoji,
+          role: { de: roleDe, en: roleEn || roleDe },
+          required: false,
+          custom: true,
+          description: { de: descDe || roleDe, en: descEn || roleEn || descDe || roleDe },
+        };
+
+        saveCustomThinker(newThinker);
+        state.selectedThinkers.push(id);
+        setState({ showAddThinkerForm: false });
+        showToast(t('thinkers.form.saved', { name }));
+      });
+
+      // Thinker management – Remove
+      document.querySelectorAll('.btn-remove-thinker[data-remove-thinker]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = el.dataset.removeThinker;
+          const tk = getThinkersList().find(x => x.id === id);
+          if (tk && confirm(t('thinkers.confirmRemove', { name: tk.name }))) {
+            removeThinker(id);
+            render();
+            showToast(t('thinkers.removed', { name: tk.name }));
+          }
+        });
+      });
+
+      // Thinker management – Restore defaults
+      const btnRestoreDefaults = document.getElementById('btn-restore-defaults');
+      if (btnRestoreDefaults) btnRestoreDefaults.addEventListener('click', () => {
+        restoreDefaultThinkers();
+        render();
+        showToast(t('thinkers.defaultsRestored'));
       });
 
       // Framework selection
