@@ -1046,6 +1046,49 @@
       'archive.empty': { de: 'Noch keine Skripte generiert.', en: 'No scripts generated yet.' },
       'archive.back': { de: '← Zurück zur Liste', en: '← Back to list' },
 
+      // --- Frameworks Page ---
+      'nav.frameworks': { de: 'Frameworks', en: 'Frameworks' },
+      'fw.title': { de: 'Frameworks', en: 'Frameworks' },
+      'fw.subtitle': { de: '{{count}} Frameworks verfügbar · Definieren die Strategie-Struktur deiner Skripte', en: '{{count}} frameworks available · Define the strategic structure of your scripts' },
+      'fw.addNew': { de: 'Framework hinzufügen', en: 'Add framework' },
+      'fw.restoreDefaults': { de: 'Entfernte wiederherstellen', en: 'Restore removed' },
+      'fw.remove': { de: 'Entfernen', en: 'Remove' },
+      'fw.confirmRemove': { de: '{{name}} wirklich entfernen?', en: 'Really remove {{name}}?' },
+      'fw.removed': { de: '{{name}} entfernt', en: '{{name}} removed' },
+      'fw.defaultsRestored': { de: 'Standard-Frameworks wiederhergestellt', en: 'Default frameworks restored' },
+      'fw.active': { de: '✓ Aktiv', en: '✓ Active' },
+      'fw.inactive': { de: 'Inaktiv', en: 'Inactive' },
+      'fw.useCase': { de: 'Einsatz:', en: 'Use case:' },
+      'fw.score': { de: 'Scientist-Score:', en: 'Scientist score:' },
+      'fw.form.name': { de: 'Framework-Name', en: 'Framework name' },
+      'fw.form.namePlaceholder': { de: 'z.B. AIDA for Scientists, Before-After-Bridge...', en: 'e.g. AIDA for Scientists, Before-After-Bridge...' },
+      'fw.form.useDe': { de: 'Einsatzgebiet (DE)', en: 'Use case (DE)' },
+      'fw.form.useEn': { de: 'Einsatzgebiet (EN)', en: 'Use case (EN)' },
+      'fw.form.usePlaceholder': { de: 'Wann dieses Framework am besten funktioniert', en: 'When this framework works best' },
+      'fw.form.descDe': { de: 'Beschreibung / Strategie (DE)', en: 'Description / Strategy (DE)' },
+      'fw.form.descEn': { de: 'Beschreibung / Strategie (EN)', en: 'Description / Strategy (EN)' },
+      'fw.form.descPlaceholder': { de: 'Wie ist das Framework aufgebaut? Welche Schritte/Phasen? (3-4 Zeilen)', en: 'How is the framework structured? What steps/phases? (3-4 lines)' },
+      'fw.form.descPlaceholderEn': { de: 'Englische Beschreibung (optional)', en: 'English description (optional)' },
+      'fw.form.score': { de: 'Scientist-Kompatibilität (1-5)', en: 'Scientist compatibility (1-5)' },
+      'fw.form.cancel': { de: 'Abbrechen', en: 'Cancel' },
+      'fw.form.save': { de: 'Framework speichern', en: 'Save framework' },
+      'fw.form.error': { de: 'Name und Beschreibung (DE) sind Pflichtfelder', en: 'Name and description (DE) are required' },
+      'fw.form.exists': { de: 'Ein Framework mit diesem Namen existiert bereits', en: 'A framework with this name already exists' },
+      'fw.form.saved': { de: '{{name}} hinzugefügt', en: '{{name}} added' },
+      'fw.analyze.title': { de: 'KI-Analyse: Framework aus Beispiel-Skript extrahieren', en: 'AI Analysis: Extract framework from example script' },
+      'fw.analyze.paste': { de: 'Beispiel-Skript einfügen', en: 'Paste example script' },
+      'fw.analyze.pastePlaceholder': { de: 'Füge hier ein YouTube-Ad-Skript ein, das dir gefällt. Die KI wird die zugrunde liegende Strategie/Framework extrahieren und auf Einzigartigkeit prüfen...', en: 'Paste a YouTube ad script you like here. The AI will extract the underlying strategy/framework and check for uniqueness...' },
+      'fw.analyze.button': { de: '🔍 Framework analysieren', en: '🔍 Analyze framework' },
+      'fw.analyze.running': { de: 'KI analysiert das Skript...', en: 'AI is analyzing the script...' },
+      'fw.analyze.result': { de: 'Analyse-Ergebnis', en: 'Analysis result' },
+      'fw.analyze.accept': { de: '✓ Framework übernehmen', en: '✓ Accept framework' },
+      'fw.analyze.discard': { de: '✕ Verwerfen', en: '✕ Discard' },
+      'fw.analyze.error': { de: 'Analyse fehlgeschlagen. Bitte Server-Verbindung prüfen.', en: 'Analysis failed. Please check server connection.' },
+      'fw.analyze.noScript': { de: 'Bitte ein Beispiel-Skript einfügen', en: 'Please paste an example script' },
+      'fw.analyze.accepted': { de: 'Framework aus Analyse übernommen', en: 'Framework accepted from analysis' },
+      'fw.or': { de: '– oder –', en: '– or –' },
+      'fw.manualAdd': { de: 'Manuell hinzufügen', en: 'Add manually' },
+
       // --- Thinkers Page ---
       'thinkers.title': { de: 'Denker-Panel', en: 'Thinker Panel' },
       'thinkers.subtitle': { de: '{{count}} Denker verfügbar · Scientist Whisperer ist immer dabei', en: '{{count}} thinkers available · Scientist Whisperer is always included' },
@@ -1217,16 +1260,89 @@
       return typeof thinker.role === 'object' ? (thinker.role[getLocale()] || thinker.role['de']) : thinker.role;
     }
 
-    const FRAMEWORKS = [
-      { id: 'evidence_first', name: 'Evidence-First', use: { de: 'Wenn harte Daten vorhanden', en: 'When hard data is available' }, score: 5 },
-      { id: 'pas_scientist', name: 'PAS for Scientists', use: { de: 'Problem Aware Zielgruppe', en: 'Problem aware audience' }, score: 5 },
-      { id: 'unique_mechanism', name: 'Unique Mechanism + Educate', use: { de: 'Gesättigter Markt (Stufe 3+)', en: 'Saturated market (Stage 3+)' }, score: 5 },
-      { id: 'hook_story_offer', name: 'Hook-Story-Offer', use: { de: 'Wenn Gründer-Story existiert', en: 'When founder story exists' }, score: 4 },
-      { id: 'value_stack', name: 'Value Stack (Hormozi)', use: { de: 'Community/Premium-Produkte', en: 'Community/premium products' }, score: 3 },
+    const DEFAULT_FRAMEWORKS = [
+      {
+        id: 'evidence_first', name: 'Evidence-First', emoji: '🔬',
+        use: { de: 'Wenn harte Daten vorhanden', en: 'When hard data is available' },
+        score: 5,
+        description: {
+          de: 'Spiegelt die wissenschaftliche Methode: Observation → Hypothesis → Method → Results → Limitations → Conclusion/CTA. Höchste Scientist-Kompatibilität, da es die Denkweise der Zielgruppe exakt abbildet. Ideale Wahl, wenn Studiendaten, Benchmarks oder messbare Ergebnisse verfügbar sind.',
+          en: 'Mirrors the scientific method: Observation → Hypothesis → Method → Results → Limitations → Conclusion/CTA. Highest scientist compatibility as it exactly matches the target audience\'s thinking. Ideal when study data, benchmarks, or measurable results are available.'
+        }
+      },
+      {
+        id: 'pas_scientist', name: 'PAS for Scientists', emoji: '🎯',
+        use: { de: 'Problem Aware Zielgruppe', en: 'Problem aware audience' },
+        score: 5,
+        description: {
+          de: 'Problem (präzise, fachsprachlich) → Agitate (Konsequenzen durchspielen, NICHT manipulativ) → Solution (als logische Konsequenz). Adaptiert das klassische PAS-Framework für wissenschaftliche Zielgruppen – respektiert Intellekt und vermeidet emotionale Manipulation.',
+          en: 'Problem (precise, domain-specific language) → Agitate (explore consequences, NOT manipulative) → Solution (as logical consequence). Adapts the classic PAS framework for scientific audiences – respects intellect and avoids emotional manipulation.'
+        }
+      },
+      {
+        id: 'unique_mechanism', name: 'Unique Mechanism + Educate', emoji: '⚙',
+        use: { de: 'Gesättigter Markt (Stufe 3+)', en: 'Saturated market (Stage 3+)' },
+        score: 5,
+        description: {
+          de: 'Zeige WARUM bisherige Ansätze scheitern, dann den neuen Mechanism. Für gesättigte Märkte, in denen die Zielgruppe schon viele Lösungen kennt. Erklärt den einzigartigen Wirkmechanismus und baut durch Bildung statt Hype Überzeugung auf.',
+          en: 'Show WHY previous approaches fail, then reveal the new mechanism. For saturated markets where the audience already knows many solutions. Explains the unique mechanism and builds conviction through education rather than hype.'
+        }
+      },
+      {
+        id: 'hook_story_offer', name: 'Hook-Story-Offer', emoji: '📖',
+        use: { de: 'Wenn Gründer-Story existiert', en: 'When founder story exists' },
+        score: 4,
+        description: {
+          de: 'Universelle Erzählstruktur: Hook (Pattern Interrupt) → Story (Epiphany Bridge – eine persönliche Erkenntnis-Geschichte) → Offer. Besonders wirksam, wenn eine authentische Gründer-Story oder Anwender-Geschichte existiert, die den Weg zur Lösung zeigt.',
+          en: 'Universal narrative structure: Hook (Pattern Interrupt) → Story (Epiphany Bridge – a personal realization story) → Offer. Especially effective when an authentic founder story or user story exists that shows the path to the solution.'
+        }
+      },
+      {
+        id: 'value_stack', name: 'Value Stack (Hormozi)', emoji: '💎',
+        use: { de: 'Community/Premium-Produkte', en: 'Community/premium products' },
+        score: 3,
+        description: {
+          de: 'Wert-Aufbau durch Kernprodukt + Bonusse + Garantie. Für Premium-Angebote und Community-Memberships. Stapelt den wahrgenommenen Wert Schicht für Schicht, bis der Preis im Verhältnis klein erscheint. Bei Scientists mit Vorsicht – Fakten statt Hype.',
+          en: 'Value building through core product + bonuses + guarantee. For premium offers and community memberships. Stacks perceived value layer by layer until the price appears small in comparison. Use with caution for scientists – facts over hype.'
+        }
+      },
     ];
+
+    function getFrameworksList() {
+      const customFrameworks = JSON.parse(localStorage.getItem('kde_custom_frameworks') || '[]');
+      const removedIds = JSON.parse(localStorage.getItem('kde_removed_frameworks') || '[]');
+      const defaults = DEFAULT_FRAMEWORKS.filter(f => !removedIds.includes(f.id));
+      return [...defaults, ...customFrameworks];
+    }
+
+    function saveCustomFramework(framework) {
+      const customs = JSON.parse(localStorage.getItem('kde_custom_frameworks') || '[]');
+      customs.push(framework);
+      localStorage.setItem('kde_custom_frameworks', JSON.stringify(customs));
+    }
+
+    function removeFramework(id) {
+      const customs = JSON.parse(localStorage.getItem('kde_custom_frameworks') || '[]');
+      const isCustom = customs.some(f => f.id === id);
+      if (isCustom) {
+        localStorage.setItem('kde_custom_frameworks', JSON.stringify(customs.filter(f => f.id !== id)));
+      } else {
+        const removed = JSON.parse(localStorage.getItem('kde_removed_frameworks') || '[]');
+        if (!removed.includes(id)) { removed.push(id); localStorage.setItem('kde_removed_frameworks', JSON.stringify(removed)); }
+      }
+      state.selectedFrameworks = state.selectedFrameworks.filter(fid => fid !== id);
+    }
+
+    function restoreDefaultFrameworks() {
+      localStorage.removeItem('kde_removed_frameworks');
+    }
 
     function fUse(framework) {
       return typeof framework.use === 'object' ? (framework.use[getLocale()] || framework.use['de']) : framework.use;
+    }
+
+    function fDesc(framework) {
+      return typeof framework.description === 'object' ? (framework.description[getLocale()] || framework.description['de']) : (framework.description || '');
     }
 
     const AWARENESS_LEVELS = {
@@ -1302,6 +1418,11 @@
       toast: null,
       // Thinker management
       showAddThinkerForm: false,
+      // Framework management
+      showAddFrameworkForm: false,
+      showAnalyzeFramework: false,
+      frameworkAnalysis: null,
+      isAnalyzingFramework: false,
     };
 
     function setState(patch) {
@@ -1326,8 +1447,9 @@
         return th ? `${th.name} (${typeof th.role === 'object' ? th.role.de : th.role})` : id;
       }).join(', ');
 
+      const allFrameworks = getFrameworksList();
       const frameworkNames = state.selectedFrameworks.map(id => {
-        const f = FRAMEWORKS.find(x => x.id === id);
+        const f = allFrameworks.find(x => x.id === id);
         return f ? f.name : id;
       }).join(', ');
 
@@ -1354,11 +1476,10 @@ ${allThinkers.filter(tk => state.selectedThinkers.includes(tk.id)).map(tk => {
 GEWÄHLTE FRAMEWORKS: ${frameworkNames}
 
 FRAMEWORKS-DETAILS:
-- Evidence-First: Spiegelt die wissenschaftliche Methode (Observation → Hypothesis → Method → Results → Limitations → Conclusion/CTA). Höchste Scientist-Kompatibilität.
-- PAS for Scientists: Problem (präzise, fachsprachlich) → Agitate (Konsequenzen durchspielen, NICHT manipulativ) → Solution (als logische Konsequenz).
-- Unique Mechanism + Educate: Zeige WARUM bisherige Ansätze scheitern, dann den neuen Mechanism. Für gesättigte Märkte.
-- Hook-Story-Offer: Universelle Erzählstruktur. Hook (Pattern Interrupt) → Story (Epiphany Bridge) → Offer.
-- Value Stack (Hormozi): Wert-Aufbau durch Kernprodukt + Bonusse + Garantie. Für Premium-Angebote.
+${allFrameworks.filter(fw => state.selectedFrameworks.includes(fw.id)).map(fw => {
+        const desc = typeof fw.description === 'object' ? fw.description.de : (fw.description || fw.name);
+        return `- ${fw.name}: ${desc}`;
+      }).join('\n')}
 
 SCIENTIST-FILTER (PFLICHT):
 ❌ Keine Buzzwords: "revolutionär", "disruptiv", "bahnbrechend", "game-changer"
@@ -1434,6 +1555,118 @@ Ziellänge: ${state.duration}
 ${state.additionalContext ? `\nZusätzlicher Kontext:\n${state.additionalContext}` : ''}
 
 Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Ergebnis im vorgegebenen Format.`;
+    }
+
+    async function analyzeFramework(scriptText) {
+      if (!state.apiConnected) {
+        showToast(t('toast.serverError'));
+        return;
+      }
+
+      setState({ isAnalyzingFramework: true, frameworkAnalysis: null });
+
+      const existingFrameworks = getFrameworksList().map(fw => {
+        const desc = typeof fw.description === 'object' ? fw.description.de : (fw.description || '');
+        return `- ${fw.name}: ${desc}`;
+      }).join('\n');
+
+      const analysisPrompt = `Du bist ein Experte für Copywriting-Frameworks und YouTube-Ad-Strategien, spezialisiert auf Marketing an skeptische Wissenschaftler.
+
+AUFGABE: Analysiere das folgende YouTube-Ad-Skript und extrahiere das zugrunde liegende strategische Framework/die Struktur.
+
+BESTEHENDE FRAMEWORKS im System:
+${existingFrameworks}
+
+ANALYSE-SCHRITTE:
+1. Identifiziere die Struktur des Skripts (Phasen, Übergänge, Aufbau)
+2. Extrahiere das Framework als abstraktes Muster
+3. Bewerte die Scientist-Kompatibilität (1-5 Sterne)
+4. Prüfe, ob dieses Framework EINZIGARTIG ist im Vergleich zu den bestehenden Frameworks
+5. Falls es einem bestehenden Framework sehr ähnelt, erkläre welchem und warum
+
+ANTWORTE EXAKT in diesem JSON-Format (kein Markdown drumherum, nur reines JSON):
+{
+  "summary": "Deine 3-5 Satz Analyse des Skripts und des erkannten Frameworks. Erwähne ob es einzigartig ist oder einem bestehenden Framework ähnelt.",
+  "is_unique": true/false,
+  "similar_to": "Name des ähnlichen Frameworks oder null",
+  "extracted": {
+    "name": "Name des Frameworks",
+    "emoji": "Passendes Emoji",
+    "use": {
+      "de": "Wann dieses Framework am besten eingesetzt wird (DE)",
+      "en": "When this framework is best used (EN)"
+    },
+    "score": 3,
+    "description": {
+      "de": "Detaillierte Beschreibung der Framework-Struktur und Phasen (DE, 2-3 Sätze)",
+      "en": "Detailed description of the framework structure and phases (EN, 2-3 sentences)"
+    }
+  }
+}`;
+
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: state.model,
+            max_tokens: 2048,
+            system: analysisPrompt,
+            messages: [{ role: 'user', content: `Analysiere dieses Skript:\n\n${scriptText}` }],
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server-Fehler: ${response.status}`);
+        }
+
+        // Collect full streaming response
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let sseBuffer = '';
+        let fullResponse = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          sseBuffer += decoder.decode(value, { stream: true });
+
+          let eventBoundary;
+          while ((eventBoundary = sseBuffer.indexOf('\n\n')) !== -1) {
+            const eventBlock = sseBuffer.substring(0, eventBoundary);
+            sseBuffer = sseBuffer.substring(eventBoundary + 2);
+
+            for (const line of eventBlock.split('\n')) {
+              const trimmed = line.trim();
+              if (!trimmed.startsWith('data: ')) continue;
+              const data = trimmed.slice(6);
+              if (data === '[DONE]') continue;
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                  fullResponse += parsed.delta.text;
+                }
+              } catch(e) { /* skip */ }
+            }
+          }
+        }
+
+        // Parse the JSON response
+        // Try to extract JSON from the response (handle potential markdown wrapping)
+        let jsonStr = fullResponse.trim();
+        const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+        if (jsonMatch) jsonStr = jsonMatch[0];
+
+        const analysis = JSON.parse(jsonStr);
+        setState({ frameworkAnalysis: analysis, isAnalyzingFramework: false });
+
+      } catch (err) {
+        console.error('Framework analysis failed:', err);
+        setState({
+          isAnalyzingFramework: false,
+          frameworkAnalysis: { summary: t('fw.analyze.error') + '\n\n' + err.message, extracted: null }
+        });
+      }
     }
 
     async function generateScript() {
@@ -1593,6 +1826,7 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
         ${state.page === 'output' ? renderOutputPage() : ''}
         ${state.page === 'archive' ? renderArchivePage() : ''}
         ${state.page === 'thinkers' ? renderThinkersPage() : ''}
+        ${state.page === 'frameworks' ? renderFrameworksPage() : ''}
         ${state.page === 'settings' ? renderSettingsPage() : ''}
       </div>
       ${state.toast ? `<div class="toast">✓ ${state.toast}</div>` : ''}
@@ -1627,6 +1861,9 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
 
       <div class="nav-item ${state.page === 'thinkers' ? 'active' : ''}" data-page="thinkers">
         <span class="nav-icon">🧠</span> ${t('nav.thinkers')}
+      </div>
+      <div class="nav-item ${state.page === 'frameworks' ? 'active' : ''}" data-page="frameworks">
+        <span class="nav-icon">📐</span> ${t('nav.frameworks')}
       </div>
       <div class="nav-item ${state.page === 'settings' ? 'active' : ''}" data-page="settings">
         <span class="nav-icon">⚙</span> ${t('nav.settings')}
@@ -1726,10 +1963,10 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
     <div class="card">
       <div class="card-header"><span class="card-icon">📐</span> ${t('gen.frameworks')} <span style="font-size:11px;color:var(--text-dim);font-weight:400;margin-left:8px">${t('gen.frameworks.selected', { count: state.selectedFrameworks.length })}</span></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        ${FRAMEWORKS.map(f => `
+        ${getFrameworksList().map(f => `
           <div class="framework-chip ${state.selectedFrameworks.includes(f.id) ? 'selected' : ''}" data-framework="${f.id}">
             <div>
-              <div style="font-weight:600">${f.name}</div>
+              <div style="font-weight:600">${f.emoji || '📐'} ${f.name}</div>
               <div style="font-size:10px;color:var(--text-dim);margin-top:2px">${fUse(f)}</div>
             </div>
             <div class="framework-stars">${'★'.repeat(f.score)}${'☆'.repeat(5 - f.score)}</div>
@@ -1940,6 +2177,136 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
   `;
     }
 
+    function renderFrameworksPage() {
+      const frameworks = getFrameworksList();
+      const removedDefaults = JSON.parse(localStorage.getItem('kde_removed_frameworks') || '[]');
+      const hasRemovedDefaults = removedDefaults.length > 0;
+
+      return `
+    <div class="page-header">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="page-title">${t('fw.title')}</div>
+          <div class="page-subtitle">${t('fw.subtitle', { count: frameworks.length })}</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          ${hasRemovedDefaults ? `<button class="btn btn-secondary btn-sm" id="btn-restore-fw-defaults">${t('fw.restoreDefaults')}</button>` : ''}
+          <button class="btn btn-primary btn-sm" id="btn-add-framework">+ ${t('fw.addNew')}</button>
+        </div>
+      </div>
+    </div>
+
+    ${state.showAnalyzeFramework ? `
+    <div class="card" style="border-color:var(--accent)">
+      <div class="card-header"><span class="card-icon">🔍</span> ${t('fw.analyze.title')}</div>
+
+      <div class="form-group">
+        <label>${t('fw.analyze.paste')}</label>
+        <textarea id="fw-analyze-script" rows="8" placeholder="${t('fw.analyze.pastePlaceholder')}" style="font-family:monospace;font-size:12px"></textarea>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:16px">
+        <button class="btn btn-secondary btn-sm" id="btn-cancel-analyze">${t('fw.form.cancel')}</button>
+        <button class="btn btn-primary btn-sm" id="btn-run-analyze" ${state.isAnalyzingFramework ? 'disabled' : ''}>
+          ${state.isAnalyzingFramework ? t('fw.analyze.running') : t('fw.analyze.button')}
+        </button>
+      </div>
+
+      ${state.frameworkAnalysis ? `
+      <div style="border:1px solid var(--accent-dim);border-radius:8px;padding:16px;background:var(--bg)">
+        <div style="font-weight:600;color:var(--accent);margin-bottom:12px">${t('fw.analyze.result')}</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap">${esc(state.frameworkAnalysis.summary)}</div>
+
+        ${state.frameworkAnalysis.extracted ? `
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <span style="font-size:20px">${state.frameworkAnalysis.extracted.emoji || '📐'}</span>
+            <div>
+              <div style="font-weight:600;color:var(--text-bright)">${esc(state.frameworkAnalysis.extracted.name)}</div>
+              <div style="font-size:11px;color:var(--text-dim)">${t('fw.score')} ${'★'.repeat(state.frameworkAnalysis.extracted.score || 3)}${'☆'.repeat(5 - (state.frameworkAnalysis.extracted.score || 3))}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+            <button class="btn btn-secondary btn-sm" id="btn-discard-analysis">${t('fw.analyze.discard')}</button>
+            <button class="btn btn-primary btn-sm" id="btn-accept-analysis">${t('fw.analyze.accept')}</button>
+          </div>
+        </div>
+        ` : ''}
+      </div>
+      ` : ''}
+    </div>
+    ` : ''}
+
+    ${state.showAddFrameworkForm ? `
+    <div class="card" style="border-color:var(--accent)">
+      <div class="card-header"><span class="card-icon">✨</span> ${state.showAnalyzeFramework ? t('fw.manualAdd') : t('fw.addNew')}</div>
+
+      <div class="form-row">
+        <div class="form-group" style="flex:2">
+          <label>${t('fw.form.name')}</label>
+          <input type="text" id="ff-name" placeholder="${t('fw.form.namePlaceholder')}" value="${esc(state.frameworkAnalysis?.extracted?.name || '')}">
+        </div>
+        <div class="form-group" style="flex:1">
+          <label>${t('fw.form.score')}</label>
+          <select id="ff-score">
+            ${[1,2,3,4,5].map(n => `<option value="${n}" ${(state.frameworkAnalysis?.extracted?.score || 3) === n ? 'selected' : ''}>${'★'.repeat(n)}${'☆'.repeat(5-n)} (${n})</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>${t('fw.form.useDe')}</label>
+          <input type="text" id="ff-use-de" placeholder="${t('fw.form.usePlaceholder')}" value="${esc(state.frameworkAnalysis?.extracted?.use?.de || '')}">
+        </div>
+        <div class="form-group">
+          <label>${t('fw.form.useEn')}</label>
+          <input type="text" id="ff-use-en" placeholder="${t('fw.form.usePlaceholder')}" value="${esc(state.frameworkAnalysis?.extracted?.use?.en || '')}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>${t('fw.form.descDe')}</label>
+        <textarea id="ff-desc-de" rows="3" placeholder="${t('fw.form.descPlaceholder')}">${esc(state.frameworkAnalysis?.extracted?.description?.de || '')}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label>${t('fw.form.descEn')}</label>
+        <textarea id="ff-desc-en" rows="3" placeholder="${t('fw.form.descPlaceholderEn')}">${esc(state.frameworkAnalysis?.extracted?.description?.en || '')}</textarea>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-secondary btn-sm" id="btn-cancel-framework">${t('fw.form.cancel')}</button>
+        <button class="btn btn-primary btn-sm" id="btn-save-framework">${t('fw.form.save')}</button>
+      </div>
+    </div>
+    ` : ''}
+
+    ${frameworks.map(fw => {
+      const desc = fDesc(fw);
+      return `
+      <div class="card" style="display:flex;gap:16px;align-items:flex-start">
+        <div style="font-size:32px;line-height:1">${fw.emoji || '📐'}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+            <span style="font-size:16px;font-weight:600;color:var(--text-bright)">${fw.name}</span>
+            ${fw.custom ? '<span style="font-size:9px;background:var(--accent-dim);color:var(--accent);padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px">Custom</span>' : ''}
+          </div>
+          <div style="font-size:12px;color:var(--accent);margin-bottom:4px">${t('fw.useCase')} ${fUse(fw)}</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">${t('fw.score')} ${'★'.repeat(fw.score)}${'☆'.repeat(5 - fw.score)}</div>
+          <div style="font-size:13px;color:var(--text-dim);line-height:1.6">
+            ${desc}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <span style="font-size:11px;color:${state.selectedFrameworks.includes(fw.id) ? 'var(--green)' : 'var(--text-dim)'};background:${state.selectedFrameworks.includes(fw.id) ? 'var(--green-dim)' : 'var(--bg)'};padding:4px 10px;border-radius:12px">${state.selectedFrameworks.includes(fw.id) ? t('fw.active') : t('fw.inactive')}</span>
+          <button class="btn btn-secondary btn-sm btn-remove-framework" data-remove-framework="${fw.id}" style="font-size:10px;padding:3px 8px;color:var(--red);border-color:var(--red-dim)">✕ ${t('fw.remove')}</button>
+        </div>
+      </div>
+    `}).join('')}
+  `;
+    }
+
     function renderSettingsPage() {
       return `
     <div class="page-header">
@@ -2102,7 +2469,7 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
         showToast(t('thinkers.defaultsRestored'));
       });
 
-      // Framework selection
+      // Framework selection (on generate page chips)
       document.querySelectorAll('.framework-chip[data-framework]').forEach(el => {
         el.addEventListener('click', () => {
           const id = el.dataset.framework;
@@ -2111,6 +2478,108 @@ Bitte generiere jetzt das Skript. Lass den Kreis debattieren und liefere das Erg
           else sel.push(id);
           setState({ selectedFrameworks: sel });
         });
+      });
+
+      // Framework management – Add (show analyze + form)
+      const btnAddFramework = document.getElementById('btn-add-framework');
+      if (btnAddFramework) btnAddFramework.addEventListener('click', () => {
+        setState({ showAnalyzeFramework: true, showAddFrameworkForm: true, frameworkAnalysis: null, isAnalyzingFramework: false });
+      });
+
+      // Framework management – Cancel analyze
+      const btnCancelAnalyze = document.getElementById('btn-cancel-analyze');
+      if (btnCancelAnalyze) btnCancelAnalyze.addEventListener('click', () => {
+        setState({ showAnalyzeFramework: false, showAddFrameworkForm: false, frameworkAnalysis: null, isAnalyzingFramework: false });
+      });
+
+      // Framework management – Run analyze
+      const btnRunAnalyze = document.getElementById('btn-run-analyze');
+      if (btnRunAnalyze) btnRunAnalyze.addEventListener('click', () => {
+        const script = document.getElementById('fw-analyze-script')?.value?.trim();
+        if (!script) { showToast(t('fw.analyze.noScript')); return; }
+        analyzeFramework(script);
+      });
+
+      // Framework management – Accept analysis
+      const btnAcceptAnalysis = document.getElementById('btn-accept-analysis');
+      if (btnAcceptAnalysis) btnAcceptAnalysis.addEventListener('click', () => {
+        if (state.frameworkAnalysis?.extracted) {
+          // Pre-fill form and show it
+          setState({ showAddFrameworkForm: true, showAnalyzeFramework: false });
+          showToast(t('fw.analyze.accepted'));
+        }
+      });
+
+      // Framework management – Discard analysis
+      const btnDiscardAnalysis = document.getElementById('btn-discard-analysis');
+      if (btnDiscardAnalysis) btnDiscardAnalysis.addEventListener('click', () => {
+        setState({ frameworkAnalysis: null });
+      });
+
+      // Framework management – Cancel form
+      const btnCancelFramework = document.getElementById('btn-cancel-framework');
+      if (btnCancelFramework) btnCancelFramework.addEventListener('click', () => {
+        setState({ showAddFrameworkForm: false, showAnalyzeFramework: false, frameworkAnalysis: null });
+      });
+
+      // Framework management – Save
+      const btnSaveFramework = document.getElementById('btn-save-framework');
+      if (btnSaveFramework) btnSaveFramework.addEventListener('click', () => {
+        const name = document.getElementById('ff-name')?.value?.trim();
+        const useDe = document.getElementById('ff-use-de')?.value?.trim();
+        const useEn = document.getElementById('ff-use-en')?.value?.trim();
+        const descDe = document.getElementById('ff-desc-de')?.value?.trim();
+        const descEn = document.getElementById('ff-desc-en')?.value?.trim();
+        const score = parseInt(document.getElementById('ff-score')?.value) || 3;
+
+        if (!name || !descDe) {
+          showToast(t('fw.form.error'));
+          return;
+        }
+
+        const id = 'custom_' + name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
+
+        if (getFrameworksList().some(fw => fw.id === id)) {
+          showToast(t('fw.form.exists'));
+          return;
+        }
+
+        const newFramework = {
+          id,
+          name,
+          emoji: state.frameworkAnalysis?.extracted?.emoji || '📐',
+          use: { de: useDe || name, en: useEn || useDe || name },
+          score,
+          custom: true,
+          description: { de: descDe, en: descEn || descDe },
+        };
+
+        saveCustomFramework(newFramework);
+        state.selectedFrameworks.push(id);
+        setState({ showAddFrameworkForm: false, showAnalyzeFramework: false, frameworkAnalysis: null });
+        showToast(t('fw.form.saved', { name }));
+      });
+
+      // Framework management – Remove
+      document.querySelectorAll('.btn-remove-framework[data-remove-framework]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = el.dataset.removeFramework;
+          const fw = getFrameworksList().find(x => x.id === id);
+          if (fw && confirm(t('fw.confirmRemove', { name: fw.name }))) {
+            removeFramework(id);
+            render();
+            showToast(t('fw.removed', { name: fw.name }));
+          }
+        });
+      });
+
+      // Framework management – Restore defaults
+      const btnRestoreFwDefaults = document.getElementById('btn-restore-fw-defaults');
+      if (btnRestoreFwDefaults) btnRestoreFwDefaults.addEventListener('click', () => {
+        restoreDefaultFrameworks();
+        render();
+        showToast(t('fw.defaultsRestored'));
       });
 
       // Form fields
